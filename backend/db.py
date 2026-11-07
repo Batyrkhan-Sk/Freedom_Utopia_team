@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS evaluations(id INTEGER PRIMARY KEY AUTOINCREMENT, con
   checklist_id TEXT, checklist_version INTEGER, data TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS appeals(id INTEGER PRIMARY KEY AUTOINCREMENT, evaluation_id INTEGER,
   criterion_id TEXT, comment TEXT, status TEXT DEFAULT 'open', created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT);
 CREATE TABLE IF NOT EXISTS decisions(id INTEGER PRIMARY KEY AUTOINCREMENT, appeal_id INTEGER,
   data TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
 """
@@ -74,6 +75,23 @@ def save_checklist(cl: Checklist) -> int:
         cl.version = (row["v"] or 0) + 1
         c.execute("INSERT INTO checklists VALUES(?,?,?)", (cl.checklist_id, cl.version, cl.model_dump_json()))
     return cl.version
+
+
+def sync_default_checklist(path: Path) -> Checklist:
+    """Стартовый чек-лист из файла -> база. Если файл изменился с прошлой синхронизации (новые правила),
+    сохраняем его как новую версию: иначе оценка шла бы по устаревшей копии в базе.
+    Правки из интерфейса тоже становятся версиями; файл перекрывает их, только когда меняется сам."""
+    import hashlib
+    text = path.read_text("utf-8")
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    cl = Checklist.model_validate_json(text)
+    with conn() as c:
+        row = c.execute("SELECT value FROM meta WHERE key='default_checklist_sha256'").fetchone()
+    if not row or row["value"] != digest or get_checklist(cl.checklist_id) is None:
+        save_checklist(cl)
+        with conn() as c:
+            c.execute("INSERT OR REPLACE INTO meta VALUES('default_checklist_sha256', ?)", (digest,))
+    return get_checklist(cl.checklist_id)
 
 
 def get_checklist(checklist_id: str, version: int | None = None) -> Checklist | None:

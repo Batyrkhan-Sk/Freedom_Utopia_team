@@ -4,6 +4,7 @@ python -m eval.run_answer_key                      # все диалоги эт�
 python -m eval.run_answer_key --ids p1-ru-001,p1-kz-003
 python -m eval.run_answer_key --resume data/eval_runs/<файл>.json   # дозапустить прерванный прогон
 python -m eval.run_answer_key --report data/eval_runs/<файл>.json   # только отчёт
+python -m eval.run_answer_key --from-cache data/eval_runs/dev_cache.json   # отчёт по кэшу make_results (без вызовов ИИ)
 
 Нужен data/raw/dev.json (скачивается из API организаторов, в git не хранится).
 Совет для настройки: CQA_RESAMPLE=1 (без повторного опроса) - в 3-5 раз меньше вызовов.
@@ -91,6 +92,8 @@ def report(results: dict, key: dict, checklist: Checklist) -> None:
     avg = lambda xs: sum(xs) / len(xs) if xs else 0
     print(f"\nДиалогов: {done}, ошибок выполнения: {len(failed)} {failed or ''}")
     print(f"Критерии совпали с эталоном: {pct(sum(ok_c.values()), sum(n_c.values()))}")
+    chats_ok, chats_n = sum(ok_l[x] for x in ("RU", "KZ", "EN")), sum(n_l[x] for x in ("RU", "KZ", "EN"))
+    print(f"  только чаты (как на контроле): {pct(chats_ok, chats_n)}")
     print(f"Итог совпал точно: {pct(exact, done)}; средняя ошибка итога: {avg(abs_err):.1f} балла")
     print(f"Флаг грубой ошибки верен: {pct(flag_ok, done)}")
     print("\nПо критериям:")
@@ -112,10 +115,26 @@ def main() -> None:
     p.add_argument("--ids", help="через запятую; по умолчанию весь эталон")
     p.add_argument("--resume", type=Path)
     p.add_argument("--report", type=Path)
+    p.add_argument("--from-cache", type=Path, help="кэш eval.make_results: отчёт по эталонным диалогам из него")
     a = p.parse_args()
 
     checklist = Checklist.model_validate(json.loads(settings.DEFAULT_CHECKLIST.read_text("utf-8")))
     key = json.loads(KEY_PATH.read_text("utf-8"))["conversations"]
+    if a.from_cache:
+        cache = json.loads(a.from_cache.read_text("utf-8"))
+        results = {}
+        for cid, e in cache.items():
+            if cid not in key:
+                continue
+            if not e.get("ok"):
+                results[cid] = {"ok": False, "error": e.get("error", "")}
+                continue
+            ev = e["evaluation"]
+            results[cid] = {"ok": True, "total": ev["total"], "critical": ev["critical_error"],
+                            "answers": {c["criterion_id"]: _norm(c["answer"]) for c in ev["criteria"]},
+                            "calls": ev["llm_calls"], "cost_usd": ev["cost_usd"], "sec": 0}
+        report(results, key, checklist)
+        return
     if a.report:
         report(json.loads(a.report.read_text("utf-8")), key, checklist)
         return
