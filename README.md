@@ -18,6 +18,17 @@ python -m eval.run_answer_key --ids p1-ru-001,p1-kz-003
 Эталон: `data/answer_key/draft.json` (21 диалог DEV), правила толкования: `docs/rules.md`.
 Нужен `data/raw/dev.json` (ответ API организаторов для `group_id=DEV`, в git не хранится).
 
+## Сдача результатов (формат CQA_Student_Guide_Appendix_Results.pdf)
+```bash
+python -m eval.make_results --group DEV            # 65 диалогов -> results/dev/results.json
+python -m eval.make_results --group PROD           # 10 контрольных чатов -> results/prod/results.json
+python -m eval.make_results --group PROD --check   # только проверить формат готового файла
+```
+Получает набор из API организаторов, оценивает действующей версией чек-листа, пишет файл и проверяет его
+по правилам приложения (коды критериев, true/false/null, реплики с 1, записи с ошибкой). Повторный запуск
+доделывает только упавшие диалоги. Эталон `data/answer_key/` используется только для измерения точности
+(`eval/run_answer_key.py`); оценщик его не видит.
+
 ## Порядок работы
 1. `POST /import?group_id=DEV` - загрузить диалоги из API организаторов;
    `POST /conversations` - JSON-файл; `POST /conversations/text` - вставленный текст («мм:сс роль: текст»)
@@ -33,4 +44,4 @@ python -m eval.run_answer_key --ids p1-ru-001,p1-kz-003
 - `backend/validator.py` - проверка ответа ИИ; `scoring.py` - расчёт; `evaluator.py` - конвейер
 - `backend/ingest.py` - загрузка JSON и текста, разбор страницы плеера
 - `backend/appeals.py` - пересчёт после решения; `db.py` - SQLite; `main.py` - API
-- `eval/run_answer_key.py` - прогон по эталону
+- `eval/run_answer_key.py` - прогон по эталону; `eval/make_results.py` + `backend/export.py` - файл сдачи

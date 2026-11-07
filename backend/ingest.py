@@ -5,6 +5,9 @@ import html as _html
 import re
 import uuid
 
+import httpx
+
+from .config import settings
 from .facts import detect_language
 
 SPEAKERS = {
@@ -57,3 +60,21 @@ def parse_pasted_text(text: str, channel: str = "agent chat", language: str | No
         transcript.append({"timestamp": ts, "speaker": SPEAKERS[m.group("sp").lower()], "text": m.group("text").strip()})
     return validate_record({"conversation_id": conversation_id or f"paste-{uuid.uuid4().hex[:8]}",
                             "channel": channel, "language": language, "transcript": transcript})
+
+
+def org_url(group_id: str, base: str | None = None) -> str:
+    """Добавляем group_id к ссылке организаторов, сохраняя её параметры (sig, api-version...).
+    httpx.get(url, params=...) заменяет весь query целиком и теряет подпись sig. Если в ссылке уже есть
+    group_id (скопировали вместе с &group_id=DEV), он заменяется."""
+    return str(httpx.URL(base or settings.ORG_API_URL).copy_merge_params({"group_id": group_id}))
+
+
+def fetch_group(group_id: str) -> list[dict]:
+    """GET к API организаторов: DEV - 65 диалогов, PROD - 10 контрольных чатов."""
+    if not settings.ORG_API_URL:
+        raise ValueError("не задан CQA_ORG_API_URL в .env")
+    r = httpx.get(org_url(group_id), timeout=60)
+    body = r.json()
+    if not body.get("isSuccess"):
+        raise ValueError(body.get("error") or f"API организаторов вернул ошибку (HTTP {r.status_code})")
+    return body["data"]["records"]

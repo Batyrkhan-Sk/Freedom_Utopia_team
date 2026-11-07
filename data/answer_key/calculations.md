@@ -124,12 +124,12 @@ Total = points ÷ max of applicable × 100, rounded to 2 decimals.
 | 03 Identification | 20 | N/A | removed | — | — |
 | 04 Consultation | 20 | 0 of 20 | 0 ÷ 20 × 20 | **0** | 20 |
 | 05 Empathy | 15 | No | No → 0 | **0** | 15 |
-| 06 Dialog mgmt | 15 | 10 of 10 | 10 ÷ 10 × 15 | **15** | 15 |
+| 06 Dialog mgmt | 15 | 7 of 10 | 7 ÷ 10 × 15 | **10.5** | 15 |
 | 07 Closing | 5 | No | No → 0 | **0** | 5 |
 | 08 Critical | — | Yes ⚠ | flag only | — | — |
-| **Sum** | | | | **25** | **80** |
+| **Sum** | | | | **20.5** | **80** |
 
-**Total: 25 ÷ 80 × 100 = 31.25**  · critical error flagged
+**Total: 20.5 ÷ 80 × 100 = 25.63**  · critical error flagged
 
 ## p1-ru-023
 

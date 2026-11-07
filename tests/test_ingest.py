@@ -39,3 +39,9 @@ def test_parse_pasted_text_bad_role():
 def test_validate_record_rejects_bad_speaker():
     with pytest.raises(ValueError):
         validate_record({"transcript": [{"timestamp": "00:00", "speaker": "boss", "text": "x"}]})
+
+
+def test_org_url_keeps_signature_and_replaces_group():
+    from backend.ingest import org_url
+    u = org_url("PROD", "https://h/invoke?api-version=1&sp=%2Ftriggers&sig=abc&group_id=DEV")
+    assert "sig=abc" in u and "api-version=1" in u and u.endswith("group_id=PROD") and "DEV" not in u

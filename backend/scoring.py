@@ -8,7 +8,8 @@ from .models import Checklist, Criterion
 
 
 def round_half_up(x: float, nd: int = 2) -> float:
-    return float(Decimal(str(x)).quantize(Decimal(1).scaleb(-nd), rounding=ROUND_HALF_UP))
+    # round(x, 9) убирает шум float: 20.5 / 80 * 100 = 25.624999999999996 -> 25.625 -> 25.63
+    return float(Decimal(str(round(x, 9))).quantize(Decimal(1).scaleb(-nd), rounding=ROUND_HALF_UP))
 
 
 def raw_points(c: Criterion, answer) -> Optional[float]:

@@ -451,10 +451,12 @@
           "confidence": "high"
         },
         "c03_identification": {
-          "answer": "na",
-          "evidence": [],
-          "reason": "Оператор не открывал счёт и не раскрывал данные. Спорно: проверка конкретного приказа потребовала бы идентификации.",
-          "confidence": "low"
+          "answer": "no",
+          "evidence": [
+            9
+          ],
+          "reason": "«Сейчас точно биржа отменяет ваш приказ» — ответ о конкретном приказе клиента без подтверждения личности. Омниканальность: клиент в приложении ≠ идентифицирован. 08 не ставим: данных из системы не раскрыто.",
+          "confidence": "medium"
         },
         "c04_consultation": {
           "answer": 0,
@@ -501,7 +503,7 @@
           "confidence": "medium"
         }
       },
-      "expected_total": 20.0,
+      "expected_total": 16.0,
       "critical_error": false
     },
     "p1-ru-022": {
@@ -547,13 +549,13 @@
           "confidence": "high"
         },
         "c06_dialog_management": {
-          "answer": 10,
+          "answer": 7,
           "evidence": [
             9,
-            11
+            10
           ],
-          "reason": "Формально реплики понятны. Спорно: команда может решить ставить ниже.",
-          "confidence": "low"
+          "reason": "Оператор ответил не на тот вопрос, клиент поправил («Я про консультацию в приложении спрашивал»): один заметный сбой. Грубая ошибка сама по себе 06 не снижает (как p4-ru-003).",
+          "confidence": "medium"
         },
         "c07_closing": {
           "answer": "no",
@@ -573,7 +575,7 @@
           "confidence": "high"
         }
       },
-      "expected_total": 31.25,
+      "expected_total": 25.63,
       "critical_error": true
     },
     "p1-ru-023": {
@@ -1497,6 +1499,230 @@
       },
       "expected_total": 90.0,
       "critical_error": false
+    },
+    "p1-ru-009": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте, я Руслан.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Уточнил: «Какое сообщение вы видите в приложении?»",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "no",
+          "evidence": [
+            11,
+            12,
+            13
+          ],
+          "reason": "«Я посмотрел: на вашем счёте есть ограничение на вывод» без подтверждения личности; клиент возразил, оператор: «Подтверждение пока не нужно».",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 10,
+          "evidence": [
+            11,
+            15
+          ],
+          "reason": "Ограничение названо, но причина («почему вывод ограничен») не дана; передал на проверку без срока и канала ответа.",
+          "confidence": "low"
+        },
+        "c05_empathy": {
+          "answer": "no",
+          "evidence": [
+            12,
+            13
+          ],
+          "reason": "Клиент встревожен проверкой без подтверждения, оператор отмахнулся.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 7,
+          "evidence": [
+            13,
+            14
+          ],
+          "reason": "Ответил не на вопрос («Напишите, если приложение зависнет»), клиенту пришлось повторить: «Я спрашиваю, почему вывод ограничен».",
+          "confidence": "medium"
+        },
+        "c07_closing": {
+          "answer": "yes",
+          "evidence": [
+            15
+          ],
+          "reason": "«Передам вопрос на проверку. До свидания.» — следующий шаг и прощание.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "yes",
+          "evidence": [
+            11
+          ],
+          "reason": "Раскрыл данные счёта (ограничение на вывод) без идентификации.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 50.5,
+      "critical_error": true
+    },
+    "p1-kz-015": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Сәлеметсіз бе, мен Мұратпын.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0
+          ],
+          "reason": "Клиент сразу ясно спросил, почему закрыт вывод.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "no",
+          "evidence": [
+            9,
+            10,
+            11
+          ],
+          "reason": "«Сіздің шотыңызда ... шектеу қойылғанын көріп тұрмын» без подтверждения; клиент возразил, оператор: «Қазір растаудың қажеті жоқ».",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 10,
+          "evidence": [
+            9,
+            13
+          ],
+          "reason": "Ограничение названо, причина не дана; отправил на проверку без срока.",
+          "confidence": "low"
+        },
+        "c05_empathy": {
+          "answer": "no",
+          "evidence": [
+            10,
+            11
+          ],
+          "reason": "Возражение клиента о подтверждении личности проигнорировано.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 7,
+          "evidence": [
+            12
+          ],
+          "reason": "Главный вопрос (причина) пропущен, клиенту пришлось спросить снова: «Ал себебі қандай?».",
+          "confidence": "low"
+        },
+        "c07_closing": {
+          "answer": "yes",
+          "evidence": [
+            13
+          ],
+          "reason": "«Оны тексеруге жіберемін. Сау болыңыз.» — следующий шаг и прощание.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Раскрыл данные счёта (ограничение на вывод) без идентификации.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 41.76,
+      "critical_error": true
+    },
+    "p1-en-014": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            10
+          ],
+          "reason": "«Hi, I'm Tyler.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0
+          ],
+          "reason": "Клиент сразу ясно спросил, почему заблокирован вывод.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "no",
+          "evidence": [
+            10,
+            11,
+            12
+          ],
+          "reason": "«I can see a withdrawal restriction on your account» без подтверждения; клиент возразил, оператор: «We can skip that».",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 10,
+          "evidence": [
+            10,
+            12
+          ],
+          "reason": "Ограничение названо, причина не дана; передал команде, но не сказал, как клиент получит ответ.",
+          "confidence": "low"
+        },
+        "c05_empathy": {
+          "answer": "no",
+          "evidence": [
+            11,
+            12
+          ],
+          "reason": "Возражение клиента проигнорировано.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 7,
+          "evidence": [
+            13,
+            14
+          ],
+          "reason": "Вопрос клиента «Will I hear back here?» оставлен без ответа — заметный сбой.",
+          "confidence": "low"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            14
+          ],
+          "reason": "Только «Goodbye.» — без итога и ответа на последний вопрос.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "yes",
+          "evidence": [
+            10
+          ],
+          "reason": "Раскрыл данные счёта (ограничение на вывод) без идентификации.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 35.88,
+      "critical_error": true
     }
   }
 }

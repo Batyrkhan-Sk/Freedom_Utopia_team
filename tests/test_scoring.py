@@ -61,3 +61,10 @@ def test_answer_key_totals(checklist, cid):
     r = score(checklist, {k: v["answer"] for k, v in conv["criteria"].items()})
     assert r["total"] == conv["expected_total"]
     assert r["critical_error"] == conv["critical_error"]
+
+
+def test_round_half_up_ignores_float_noise():
+    from backend.scoring import round_half_up
+    assert 20.5 / 80 * 100 != 25.625          # float-шум
+    assert round_half_up(20.5 / 80 * 100) == 25.63
+    assert round_half_up(2.675) == 2.68 and round_half_up(1.005) == 1.01

@@ -10,6 +10,7 @@ from pydantic import BaseModel
 class Criterion(BaseModel):
     id: str
     name: str
+    code: Optional[str] = None                   # код критерия в файле сдачи (contact, discovery...)
     type: Literal["yes_no", "scale", "flag"]
     weight: float = 0
     na_allowed: bool = False

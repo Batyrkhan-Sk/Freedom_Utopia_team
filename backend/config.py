@@ -48,6 +48,8 @@ class Settings:
     DB_PATH = os.getenv("CQA_DB", str(ROOT / "data" / "cqa.sqlite"))
     ORG_API_URL = os.getenv("CQA_ORG_API_URL", "")  # адрес GET-запроса организаторов
     BATCH_WORKERS = int(os.getenv("CQA_BATCH_WORKERS", "2"))
+    TEAM_NAME = os.getenv("CQA_TEAM_NAME", "Freedom Utopia")
+    MODEL_MODE = os.getenv("CQA_MODEL_MODE", "")   # local / external_api / hybrid; пусто = по модели
     DEFAULT_CHECKLIST = ROOT / "config" / "checklist.default.json"
     REACTION_THRESHOLD_SEC = int(os.getenv("CQA_REACTION_THRESHOLD_SEC", "180"))
 

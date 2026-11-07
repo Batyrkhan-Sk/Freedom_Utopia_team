@@ -15,7 +15,7 @@ from . import db
 from .appeals import apply_decision
 from .config import settings
 from .evaluator import evaluate
-from .ingest import extract_audio_src, parse_pasted_text, validate_record
+from .ingest import extract_audio_src, fetch_group, parse_pasted_text, validate_record
 from .models import Checklist
 
 app = FastAPI(title="CQA")
@@ -34,11 +34,10 @@ def startup():
 @app.post("/import")
 def import_group(group_id: str):
     """Прокси к API организаторов (решает CORS). URL задаётся переменной CQA_ORG_API_URL."""
-    r = httpx.get(settings.ORG_API_URL, params={"group_id": group_id}, timeout=60)
-    body = r.json()
-    if not body.get("isSuccess"):
-        raise HTTPException(502, body.get("error") or "API организаторов вернул ошибку")
-    records = body["data"]["records"]
+    try:
+        records = fetch_group(group_id)
+    except ValueError as e:
+        raise HTTPException(502, str(e))
     db.save_conversations(group_id, records)
     return {"imported": len(records)}
 
