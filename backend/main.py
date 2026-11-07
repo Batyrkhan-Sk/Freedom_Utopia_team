@@ -20,6 +20,7 @@ from .facts import build_messages
 from .ingest import extract_audio_src, fetch_group, parse_pasted_text, validate_record
 from .models import Checklist
 from .reevaluate import reevaluate_conversation
+from .refs import humanize_evaluation
 
 app = FastAPI(title="CQA")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -82,7 +83,7 @@ def conversation(cid: str):
             "messages": [{"idx": m["idx"], "ts": m["ts"], "t": m["t"], "speaker": m["speaker"], "text": m["text"]}
                          for m in msgs],
         },
-        "evaluation": db.latest_evaluation(cid),
+        "evaluation": humanize_evaluation(db.latest_evaluation(cid), len(msgs)),   # номера реплик с 1
         "appeals": db.appeals_for_conversation(cid),
     }
 
@@ -172,9 +173,15 @@ def _run(conv_id: str, checklist_id: str, version: int | None) -> dict:
     return ev
 
 
+def _n_msgs(cid: str) -> int:
+    conv = db.get_conversation(cid)
+    return len(conv["transcript"]) if conv else 0
+
+
 @app.post("/evaluate/{conv_id}")
 def evaluate_one(conv_id: str, checklist_id: str = "chat-quality", version: int | None = None):
-    return _run(conv_id, checklist_id, version)
+    ev = _run(conv_id, checklist_id, version)
+    return humanize_evaluation(ev, _n_msgs(conv_id))
 
 
 class BatchIn(BaseModel):
@@ -301,7 +308,8 @@ def decide(aid: int, d: DecisionIn):
     db.save_decision(aid, res)
     updated = apply_to_evaluation(ev, cl, res, aid)   # решение меняет саму оценку: итог в карточке актуален
     db.update_evaluation(ap["evaluation_id"], updated)
-    return {**res, "evaluation": db.get_evaluation(ap["evaluation_id"])}
+    ev = db.get_evaluation(ap["evaluation_id"])
+    return {**res, "evaluation": humanize_evaluation(ev, _n_msgs(ev["conversation_id"]))}
 
 
 # ---------- интерфейс ----------
