@@ -82,9 +82,10 @@ def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete) -> dict:
 
     # Повторный опрос только для критериев с resample > 1 (шкальные, где модель чаще ошибается)
     for c in checklist.criteria:
-        if c.resample > 1 and norm[c.id]["answer"] != "na":
+        n = settings.resample_for(c)   # CQA_RESAMPLE=1 выключает повторный опрос
+        if n > 1 and norm[c.id]["answer"] != "na":
             votes = [norm[c.id]]
-            for _ in range(c.resample - 1):
+            for _ in range(n - 1):
                 votes.append(_ask(llm, checklist, conv, msgs, facts, [c.id], usage,
                                   temperature=settings.VOTE_TEMPERATURE)[c.id])
             norm[c.id] = _merge_votes(c, votes)

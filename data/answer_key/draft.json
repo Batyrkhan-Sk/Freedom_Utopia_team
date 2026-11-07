@@ -1,0 +1,1502 @@
+{
+  "version": "draft-1",
+  "checklist": "chat-quality v1",
+  "status": "DRAFT — needs human review. Team decision overrides every item.",
+  "legend": {
+    "answer": "yes | no | na | number (scale step). For c08: yes = violation found",
+    "evidence": "0-based message indexes in transcript",
+    "confidence": "high | medium | low — low items must be discussed by the team"
+  },
+  "conversations": {
+    "p1-ru-001": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте! Меня зовут Алина.» — приветствие и имя в первом ответе, на русском.",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0,
+            4
+          ],
+          "reason": "Клиент сразу дал всё нужное (тариф, ноутбук, отчёт не хочет). Уточнять было нечего.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [
+            9
+          ],
+          "reason": "Общий вопрос, где посмотреть тариф. Данные счёта оператор не раскрывал.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Дан точный путь в веб-версии, клиент нашёл.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Вежлив, недовольства клиент не выражал.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ответ ясный, первая реакция через 37 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            11
+          ],
+          "reason": "«Пожалуйста. Хорошего вечера!» — прощание есть, но нет итога и предложения помощи.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 92.31,
+      "critical_error": false
+    },
+    "p1-ru-005": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Добрый день, меня зовут Нина.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0,
+            4
+          ],
+          "reason": "Способ пополнения клиент уже назвал боту, уточнять было нечего.",
+          "confidence": "low"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общие вопросы про комиссию и реквизиты, данные счёта не раскрывались.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 15,
+          "evidence": [
+            9,
+            13,
+            15
+          ],
+          "reason": "Путь к реквизитам дан, про комиссию — только «проверьте в банке», роль брокера не пояснена.",
+          "confidence": "low"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            13
+          ],
+          "reason": "Вежлив, извинился за неясный ответ.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 4,
+          "evidence": [
+            11,
+            12
+          ],
+          "reason": "«Там же где перевод... сверху вниз в меню» — клиенту пришлось переспросить «В каком меню?».",
+          "confidence": "low"
+        },
+        "c07_closing": {
+          "answer": "yes",
+          "evidence": [
+            15
+          ],
+          "reason": "«Перед переводом проверьте комиссию в банке. До свидания!» — итог и прощание.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 78.46,
+      "critical_error": false
+    },
+    "p1-ru-006": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте, меня зовут Роман.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "yes",
+          "evidence": [
+            12
+          ],
+          "reason": "Не переспрашивал уже известное, уточнил валюту перевода.",
+          "confidence": "high"
+        },
+        "c03_identification": {
+          "answer": "yes",
+          "evidence": [
+            9,
+            11,
+            12
+          ],
+          "reason": "Проверка платежа требует идентификации. Системное «Личность клиента подтверждена» до действий по счёту.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            12,
+            14
+          ],
+          "reason": "Корректный следующий шаг: передал специалистам, сказал, где будет ответ.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Понимаю, что вы переживаете из-за платежа» — реакция на конкретную проблему.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9,
+            12,
+            14
+          ],
+          "reason": "Ясно и последовательно, первая реакция 132 с (< 3 мин).",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "yes",
+          "evidence": [
+            14
+          ],
+          "reason": "Итог («сообщим в этом чате») и прощание.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-ru-010": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            10
+          ],
+          "reason": "«Здравствуйте, я Соня.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "yes",
+          "evidence": [
+            10,
+            15
+          ],
+          "reason": "Уточнил приложение/веб и название бумаги, учёл, что пропала одна строка.",
+          "confidence": "high"
+        },
+        "c03_identification": {
+          "answer": "yes",
+          "evidence": [
+            12,
+            14
+          ],
+          "reason": "Проверка позиции — идентификация подтверждена системой до передачи.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            18,
+            20,
+            27
+          ],
+          "reason": "Позиция передана на проверку, путь к отчёту и выбор периода объяснены.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            10
+          ],
+          "reason": "«Понимаю, что пропавшая строка в портфеле беспокоит.»",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            18,
+            22
+          ],
+          "reason": "Ясные ответы на все дополнительные вопросы, первая реакция 88 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "yes",
+          "evidence": [
+            31
+          ],
+          "reason": "«Вопрос о позиции передан. Хорошего вечера!» — итог и прощание.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-ru-012": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте. Я Илья.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            4
+          ],
+          "reason": "Вопрос однозначный (есть ли на русском), уточнять нечего.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос о форме 1042-S.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Ответ по существу, клиент подтвердил: «это всё что хотел узнать».",
+          "confidence": "medium"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Вежлив, недовольства нет.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ясный ответ, первая реакция 114 с.",
+          "confidence": "medium"
+        },
+        "c07_closing": {
+          "answer": "na",
+          "evidence": [
+            11
+          ],
+          "reason": "«Соединение с клиентом прервано» через 18 с после последней реплики клиента — завершить не успел.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-ru-015": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте, меня зовут Дина.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0,
+            4
+          ],
+          "reason": "Клиент сразу описал ситуацию полностью.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос о логине.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Причина объяснена, дан следующий шаг, ответил на уточнение.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Вежлив.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Ясно, первая реакция 39 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "yes",
+          "evidence": [
+            11
+          ],
+          "reason": "«Выберите другой логин. Спасибо за обращение, до свидания!» — итог и прощание.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-ru-018": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте, меня зовут Саша.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "no",
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Не уточнил бумагу и текст ошибки, сразу дал вывод. Клиент: «Я даже бумагу вам не назвал».",
+          "confidence": "high"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Оператор не открывал счёт и не раскрывал данные. Спорно: проверка конкретного приказа потребовала бы идентификации.",
+          "confidence": "low"
+        },
+        "c04_consultation": {
+          "answer": 0,
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Ошибочное категоричное утверждение, затем «Тогда не знаю».",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "no",
+          "evidence": [
+            10,
+            11,
+            12
+          ],
+          "reason": "Клиент выразил недоверие, оператор не отреагировал и закрыл чат.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 4,
+          "evidence": [
+            9,
+            10,
+            11
+          ],
+          "reason": "Противоречивые реплики, клиенту пришлось переспрашивать. Возможно 0.",
+          "confidence": "low"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            11,
+            12
+          ],
+          "reason": "Оператор закрыл чат без итога и прощания.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Грубо по сути, но оскорбления, обхода компании или раскрытия данных нет.",
+          "confidence": "medium"
+        }
+      },
+      "expected_total": 20.0,
+      "critical_error": false
+    },
+    "p1-ru-022": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте, я Кирилл.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "no",
+          "evidence": [
+            9
+          ],
+          "reason": "Проигнорировал запрос клиента и сразу предложил личную схему.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Данные счёта не затрагивались.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 0,
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Ответа по существу нет, рекомендация ошибочна и незаконна.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "no",
+          "evidence": [
+            10,
+            11
+          ],
+          "reason": "Клиент возмутился («Вы серьёзно?»), оператор не отреагировал на проблему.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Формально реплики понятны. Спорно: команда может решить ставить ниже.",
+          "confidence": "low"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            13
+          ],
+          "reason": "Оператор закрыл чат без итога и прощания.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "yes",
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "«Скиньте деньги мне на карту... через компанию оформлять не надо» — услуга в обход компании.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 31.25,
+      "critical_error": true
+    },
+    "p1-ru-023": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте, я Марк.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0
+          ],
+          "reason": "Вопрос понятен с самого начала.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос о поиске облигаций.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Верный путь, клиент нашёл.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9,
+            13
+          ],
+          "reason": "Тон вежливый, жалоб нет.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ясно, первая реакция 59 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            13
+          ],
+          "reason": "«Хорошо. Всего доброго.» — прощание без итога. Предложение платной частной помощи не считается.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "yes",
+          "evidence": [
+            11
+          ],
+          "reason": "Просит личный номер для платной частной консультации.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 92.31,
+      "critical_error": true
+    },
+    "p1-ru-025": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Здравствуйте! Меня зовут Валерия, поддержка Freedom Broker.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Запроса не было, оператор спросил «С чем помочь?». Спорно: условие N/A для c02 не выполнено.",
+          "confidence": "low"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Запроса не было.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": "na",
+          "evidence": [
+            10
+          ],
+          "reason": "Клиент покинул чат до того, как сформулировал запрос.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Вежлив.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ясно, первая реакция 97 с.",
+          "confidence": "medium"
+        },
+        "c07_closing": {
+          "answer": "na",
+          "evidence": [
+            10
+          ],
+          "reason": "«Клиент покинул чат» — завершить было невозможно.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-ru-026": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Добрый день, я Виктор.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "no",
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Не учёл уже написанный вопрос: «Чем могу помочь?» → клиент: «Я писал выше».",
+          "confidence": "high"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос о реквизитах.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 0,
+          "evidence": [
+            11
+          ],
+          "reason": "«Всё есть в приложении» — ответа по существу нет.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "no",
+          "evidence": [
+            4,
+            10,
+            11
+          ],
+          "reason": "Клиент описал неудобство, оператор отмахнулся.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 4,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Клиенту пришлось повторять вопрос. Возможно 0.",
+          "confidence": "medium"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            11,
+            12
+          ],
+          "reason": "Оператор закрыл чат без итога и прощания.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Пренебрежительно, но не оскорбление.",
+          "confidence": "medium"
+        }
+      },
+      "expected_total": 20.0,
+      "critical_error": false
+    },
+    "p1-kz-001": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Сәлеметсіз бе, менің атым Аружан.» — на казахском, как клиент.",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0,
+            4
+          ],
+          "reason": "Как p1-ru-001: данных хватало сразу.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос о тарифе.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Точный путь, клиент нашёл («Көрдім»).",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Вежлив.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ясно, 37 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            11
+          ],
+          "reason": "«Оқасы жоқ. Сау болыңыз!» — прощание без итога и предложения помощи.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 92.31,
+      "critical_error": false
+    },
+    "p1-kz-003": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            10
+          ],
+          "reason": "«Сәлеметсіз бе, мен Дана.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "yes",
+          "evidence": [
+            13,
+            16
+          ],
+          "reason": "Уточнил валюту и время перевода.",
+          "confidence": "high"
+        },
+        "c03_identification": {
+          "answer": "yes",
+          "evidence": [
+            10,
+            12
+          ],
+          "reason": "«Клиенттің жеке басы расталды» до действий по платежу.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            13,
+            18,
+            21,
+            23
+          ],
+          "reason": "Передал вопрос, ответил про отчёт и период.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            10
+          ],
+          "reason": "«Алаңдайтыныңыз түсінікті» — реакция на беспокойство.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            16,
+            18
+          ],
+          "reason": "Ясно, первая реакция 95 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "yes",
+          "evidence": [
+            25
+          ],
+          "reason": "Итог («жауапты осында жібереміз») и прощание.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-kz-011": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Сәлеметсіз бе, мен Саматпын.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            4
+          ],
+          "reason": "Вопрос однозначный.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос о типах счетов.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Ответил и подтвердил следующий шаг.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Вежлив.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Ясно, первая реакция 95 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "na",
+          "evidence": [
+            13
+          ],
+          "reason": "«Клиентпен байланыс үзілді» через 28 с после «Жақсы».",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-kz-013": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Сәлеметсіз бе, мен Айданамын.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0
+          ],
+          "reason": "Вопрос понятен сразу.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Верный путь, клиент нашёл.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Тон вежливый.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ясно, первая реакция 133 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            13
+          ],
+          "reason": "«Оператор чатты жапты» без прощания.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "yes",
+          "evidence": [
+            11
+          ],
+          "reason": "Просит личный номер, чтобы платно проконсультировать после работы.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 92.31,
+      "critical_error": true
+    },
+    "p1-en-001": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Hi, I'm Maya from support.» — на английском.",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0,
+            4
+          ],
+          "reason": "Клиент сразу сказал, что закрыл старый счёт.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос о логине.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Причина и следующий шаг.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9,
+            11
+          ],
+          "reason": "Вежлив.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ясно, 37 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            11
+          ],
+          "reason": "«You're welcome. Take care!» — прощание без итога и помощи.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 92.31,
+      "critical_error": false
+    },
+    "p1-en-006": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            10
+          ],
+          "reason": "«Hello, I'm Sam.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "yes",
+          "evidence": [
+            13,
+            18
+          ],
+          "reason": "Уточнил валюту и время перевода.",
+          "confidence": "high"
+        },
+        "c03_identification": {
+          "answer": "yes",
+          "evidence": [
+            10,
+            12
+          ],
+          "reason": "«Customer identity verified» до проверки счёта.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            15,
+            20,
+            25,
+            27
+          ],
+          "reason": "Дело передано, отчёт объяснён.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            10
+          ],
+          "reason": "Клиент нервничает, «I understand why you'd want to check».",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            15,
+            22
+          ],
+          "reason": "Ясно, первая реакция 87 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "yes",
+          "evidence": [
+            29
+          ],
+          "reason": "Итог («We'll follow up here») и прощание.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-en-009": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Hi, I'm Leo.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0,
+            4
+          ],
+          "reason": "Клиент сразу сказал, что приказ ещё не отправлен.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос о настройке.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Точная инструкция, клиент нашёл.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Вежлив.",
+          "confidence": "high"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ясно, 57 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "na",
+          "evidence": [
+            11
+          ],
+          "reason": "«Connection to customer lost» через 18 с.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 100.0,
+      "critical_error": false
+    },
+    "p1-en-013": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "«Hi, I'm Adrian.»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            0
+          ],
+          "reason": "Вопрос понятен сразу.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Общий вопрос.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 20,
+          "evidence": [
+            9,
+            10
+          ],
+          "reason": "Верный путь, клиент нашёл.",
+          "confidence": "high"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            9
+          ],
+          "reason": "Тон вежливый.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 10,
+          "evidence": [
+            9
+          ],
+          "reason": "Ясно, первая реакция 133 с.",
+          "confidence": "high"
+        },
+        "c07_closing": {
+          "answer": "no",
+          "evidence": [
+            13
+          ],
+          "reason": "«Agent closed the chat» без прощания.",
+          "confidence": "high"
+        },
+        "c08_critical_errors": {
+          "answer": "yes",
+          "evidence": [
+            11
+          ],
+          "reason": "«I charge for private advice» + просит личный номер.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 92.31,
+      "critical_error": true
+    },
+    "p4-ru-001": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            12
+          ],
+          "reason": "«...меня зовут [Имя скрыто] Здравствуйте, чем могу вам помочь» — имя и приветствие (шум распознавания).",
+          "confidence": "medium"
+        },
+        "c02_needs": {
+          "answer": "na",
+          "evidence": [
+            22,
+            24
+          ],
+          "reason": "Вопрос клиента понятен (как помогает поддержка). Спорно: можно было уточнить про персонального менеджера.",
+          "confidence": "low"
+        },
+        "c03_identification": {
+          "answer": "na",
+          "evidence": [],
+          "reason": "Счёт не открывали, данные не раскрывали.",
+          "confidence": "medium"
+        },
+        "c04_consultation": {
+          "answer": 10,
+          "evidence": [
+            25,
+            26,
+            29,
+            35
+          ],
+          "reason": "Объяснил роль поддержки, но не сказал, как получить менеджера. Клиент ушёл с ощущением, что «отфутболили».",
+          "confidence": "low"
+        },
+        "c05_empathy": {
+          "answer": "no",
+          "evidence": [
+            33,
+            39,
+            41,
+            42
+          ],
+          "reason": "Клиент выразил недовольство. Ответы сухие («Нет, не делаем»), в [42] сочувствие без решения.",
+          "confidence": "low"
+        },
+        "c06_dialog_management": {
+          "answer": 7,
+          "evidence": [
+            25,
+            37
+          ],
+          "reason": "В целом понятно, есть сбивчивые реплики. Шум распознавания не учитываем.",
+          "confidence": "low"
+        },
+        "c07_closing": {
+          "answer": "na",
+          "evidence": [
+            43
+          ],
+          "reason": "Клиент завершил звонок, пока оператор задавал вопрос.",
+          "confidence": "medium"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 50.83,
+      "critical_error": false
+    },
+    "p4-ru-003": {
+      "criteria": {
+        "c01_contact": {
+          "answer": "yes",
+          "evidence": [
+            12
+          ],
+          "reason": "«Здравствуйте, Фридом брокер меня зовут [Имя скрыто], чем могу помочь?»",
+          "confidence": "high"
+        },
+        "c02_needs": {
+          "answer": "yes",
+          "evidence": [
+            18,
+            21,
+            31
+          ],
+          "reason": "Уточнял детали поручения и прошлый контакт, прежде чем отвечать.",
+          "confidence": "medium"
+        },
+        "c03_identification": {
+          "answer": "yes",
+          "evidence": [
+            39,
+            53,
+            64,
+            65
+          ],
+          "reason": "ФИО, ИИН и SMS-код, «идентификацию успешно» до раскрытия статуса поручения.",
+          "confidence": "high"
+        },
+        "c04_consultation": {
+          "answer": 15,
+          "evidence": [
+            65,
+            67,
+            70,
+            75
+          ],
+          "reason": "Статус и следующий шаг даны, но сначала прозвучал противоречивый срок («завтра» vs «до 00:00»).",
+          "confidence": "low"
+        },
+        "c05_empathy": {
+          "answer": "yes",
+          "evidence": [
+            21,
+            70
+          ],
+          "reason": "Вежлив, отреагировал на жалобу о задержке, передал в отдел.",
+          "confidence": "medium"
+        },
+        "c06_dialog_management": {
+          "answer": 7,
+          "evidence": [
+            26,
+            27,
+            38
+          ],
+          "reason": "Предупреждал об ожидании, но в [26] ответил не на тот вопрос, клиент поправил.",
+          "confidence": "medium"
+        },
+        "c07_closing": {
+          "answer": "na",
+          "evidence": [
+            75,
+            76,
+            77
+          ],
+          "reason": "Итог дан, клиент повесил трубку через 1 с после «спасибо». Спорно: можно ставить «Да».",
+          "confidence": "low"
+        },
+        "c08_critical_errors": {
+          "answer": "no",
+          "evidence": [],
+          "reason": "Нарушений нет.",
+          "confidence": "high"
+        }
+      },
+      "expected_total": 90.0,
+      "critical_error": false
+    }
+  }
+}

@@ -14,6 +14,7 @@ class Criterion(BaseModel):
     weight: float = 0
     na_allowed: bool = False
     scale: Optional[list[float]] = None          # для type="scale", например [0, 4, 7, 10]
+    scale_descriptions: Optional[dict[str, str]] = None   # {"20": "что означает ступень", ...}
     instruction: str = ""                        # инструкция для ИИ: когда да / нет / N/A
     section: Optional[str] = None                # id секции, если секции заданы
     evidence_roles: Optional[list[str]] = None   # кто может быть доказательством

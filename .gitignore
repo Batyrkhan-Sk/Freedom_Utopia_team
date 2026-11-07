@@ -4,3 +4,5 @@ __pycache__/
 data/*.sqlite
 .pytest_cache/
 .venv/
+data/raw/
+data/eval_runs/
