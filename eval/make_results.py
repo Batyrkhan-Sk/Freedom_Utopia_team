@@ -5,6 +5,10 @@ python -m eval.make_results --group PROD            # 10 контрольных 
 python -m eval.make_results --group PROD --api-group CONTROL   # если в API у набора другое имя group_id
 python -m eval.make_results --group DEV --ids p1-ru-001,p1-kz-003   # часть набора (файл не пишется)
 python -m eval.make_results --group PROD --check    # только проверить уже готовый файл
+python -m eval.make_results --group REHEARSAL --api-group DEV --limit 3   # репетиция: 3 диалога, results/rehearsal
+
+После правки чек-листа (замена критерия) та же команда переоценивает только изменённые критерии:
+остальные ответы берутся из прошлой оценки в кэше.
 
 Повторный запуск продолжает с места остановки: успешные оценки берутся из кэша
 (data/eval_runs/<group>_cache.json), ошибки пробуются заново. --fresh - оценить всё заново.
@@ -30,6 +34,7 @@ from backend.evaluator import evaluate  # noqa: E402
 from backend.export import build_document, error_result, to_result, validate_document  # noqa: E402
 from backend.ingest import fetch_group  # noqa: E402
 from backend.models import Checklist  # noqa: E402
+from backend.reevaluate import reevaluate_conversation  # noqa: E402
 
 RAW = ROOT / "data" / "raw"
 RUNS = ROOT / "data" / "eval_runs"
@@ -61,6 +66,7 @@ def main() -> None:
     p.add_argument("--fresh", action="store_true", help="не брать оценки из кэша")
     p.add_argument("--refetch", action="store_true", help="заново скачать набор из API")
     p.add_argument("--check", action="store_true", help="только проверить готовый results.json")
+    p.add_argument("--limit", type=int, help="взять первые N диалогов набора (для репетиции)")
     p.add_argument("--custom-checklist", action="store_true",
                    help="чек-лист изменён (критерий заменён): не требовать ровно 8 официальных кодов")
     a = p.parse_args()
@@ -69,6 +75,8 @@ def main() -> None:
     t_start = time.time()
 
     records = load_records(a.api_group or group, a.refetch)
+    if a.limit:
+        records = records[:a.limit]
     ids_all = [r["conversation_id"] for r in records]
     lengths = {r["conversation_id"]: len(r["transcript"]) for r in records}
     checklist = active_checklist()
@@ -99,10 +107,17 @@ def main() -> None:
             return
         t0 = time.time()
         try:
-            ev = evaluate(recs[cid], checklist)
+            prev = hit["evaluation"] if hit and hit.get("ok") else None
+            if prev:   # чек-лист изменился: ИИ спрашиваем только об изменённых и новых критериях
+                old_cl = db.get_checklist(prev["checklist_id"], prev["checklist_version"])
+                ev, _ = reevaluate_conversation(recs[cid], prev, old_cl, checklist)
+            else:
+                ev = evaluate(recs[cid], checklist)
             ev["evaluation_id"] = db.save_evaluation(ev)
             entry = {"ok": True, "checklist": version, "evaluation": ev}
-            msg = f"{ev['total']}{' ⚠ грубая ошибка' if ev['critical_error'] else ''} ({ev['model']})"
+            asked = ev.get("asked_criteria") or []
+            part = f", спрошено у ИИ: {', '.join(asked) or 'ничего (пересчёт)'}" if prev else ""
+            msg = f"{ev['total']}{' ⚠ грубая ошибка' if ev['critical_error'] else ''} ({ev['model']}{part})"
         except Exception as e:  # одна ошибка не останавливает прогон: в файле будет status=error
             entry = {"ok": False, "checklist": version, "error": f"{type(e).__name__}: {e}"}
             msg = "ОШИБКА " + entry["error"][:150]

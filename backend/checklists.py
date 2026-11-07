@@ -64,3 +64,32 @@ def diff_checklists(old: Checklist, new: Checklist) -> dict:
             weight_only.append(i)
     return {"added": added, "removed": removed, "changed": changed,
             "weight_only": weight_only, "rules_changed": rules_changed}
+
+
+# Допустимые значения по коду в файле сдачи (приложение организаторов, стр. 3)
+OFFICIAL_NA = {"discovery", "identification", "consultation", "closure"}      # где разрешён null (N/A)
+OFFICIAL_SCALE = {"consultation": [0, 5, 10, 15, 20], "dialogue": [0, 4, 7, 10]}
+OFFICIAL_TYPE = {"contact": "yes_no", "discovery": "yes_no", "identification": "yes_no", "consultation": "scale",
+                 "empathy": "yes_no", "dialogue": "scale", "closure": "yes_no", "critical": "flag"}
+
+
+def format_warnings(cl: Checklist) -> list[str]:
+    """Не блокирует сохранение: предупреждает, что ответы критерия не влезут в формат файла сдачи
+    (например, при замене критерия новый получил код empathy, а N/A у empathy в формате запрещён)."""
+    warn = []
+    for c in cl.criteria:
+        code = c.code or c.id
+        if code not in OFFICIAL_TYPE:
+            warn.append(f"{c.id}: кода «{code}» нет в формате сдачи - в results.json нужен один из 8 официальных кодов")
+            continue
+        if c.type != OFFICIAL_TYPE[code] and not (OFFICIAL_TYPE[code] == "yes_no" and c.type == "flag"):
+            warn.append(f"{c.id}: для кода «{code}» в формате сдачи нужен тип {OFFICIAL_TYPE[code]}, а у критерия {c.type}")
+        if c.na_allowed and code not in OFFICIAL_NA:
+            warn.append(f"{c.id}: для кода «{code}» формат сдачи не допускает N/A (null) - снимите «N/A разрешён»")
+        if code in OFFICIAL_SCALE and c.type == "scale" and sorted(float(x) for x in (c.scale or [])) != [float(x) for x in OFFICIAL_SCALE[code]]:
+            warn.append(f"{c.id}: для кода «{code}» в формате сдачи шкала {OFFICIAL_SCALE[code]}")
+    codes = [c.code or c.id for c in cl.criteria]
+    missing = [x for x in OFFICIAL_TYPE if x not in codes]
+    if missing:
+        warn.append(f"В чек-листе нет критериев с кодами {missing} - файл сдачи требует все 8")
+    return warn
