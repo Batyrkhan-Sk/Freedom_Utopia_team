@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from . import db
 from .appeals import apply_decision, apply_to_evaluation
-from .checklists import check_checklist, diff_checklists
+from .checklists import check_checklist, format_warnings, diff_checklists
 from .config import settings
 from .evaluator import evaluate
 from .facts import build_messages
@@ -151,7 +151,8 @@ def save_checklist(cl: Checklist):
     errors = check_checklist(cl)
     if errors:
         raise HTTPException(422, errors)
-    return {"checklist_id": cl.checklist_id, "version": db.save_checklist(cl)}
+    # warnings: ответы не влезут в формат файла сдачи (не блокирует - чек-лист может быть не для сдачи)
+    return {"checklist_id": cl.checklist_id, "version": db.save_checklist(cl), "warnings": format_warnings(cl)}
 
 
 @app.get("/checklists/{checklist_id}/diff")

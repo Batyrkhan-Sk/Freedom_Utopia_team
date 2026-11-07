@@ -224,3 +224,13 @@ def test_upload_keeps_group_id(client):
     rec = json.loads(json.dumps(CONV)); rec["conversation_id"] = "t-dev"
     client.post("/conversations", params={"group_id": "DEV"}, json=rec)
     assert client.get("/conversations/t-dev").json()["conversation"]["group_id"] == "DEV"
+
+
+def test_format_warnings_on_code_rules(checklist):
+    from backend.checklists import format_warnings
+    assert format_warnings(checklist) == []                                  # стартовый чек-лист в формате
+    swapped = edited(checklist, c05_empathy={"na_allowed": True})
+    assert any("empathy" in w and "N/A" in w for w in format_warnings(swapped))
+    renamed = edited(checklist, c06_dialog_management={"code": "custom"})
+    w = format_warnings(renamed)
+    assert any("custom" in x for x in w) and any("dialogue" in x for x in w)

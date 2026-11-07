@@ -153,7 +153,8 @@ const D=[["Checklist","Чек-лист","Тексеру парағы"],["Convers
 ["Language: auto","Язык: авто","Тіл: авто"],["Conversation ID (optional)","ID диалога (необязательно)","Диалог ID (міндетті емес)"],["Cancel","Отмена","Болдырмау"],["Import","Загрузить","Жүктеу"],
 ["shown","показано","көрсетілді"],["for evaluation","к оценке","бағалауға"],["was","было","бұрын"],["total","итог","қорытынды"],["Open","Открыть","Ашу"],
 ["Data ▾","Данные ▾","Деректер ▾"],["All","Все","Барлығы"],["Gross errors","Грубые ошибки","Өрескел қателер"],["Technical details","Технические детали","Техникалық мәліметтер"],
-["Instruction for the AI and section","Инструкция для ИИ и секция","ЖИ-ге нұсқаулық және бөлім"],["checked","проверено","тексерілді"]];
+["Instruction for the AI and section","Инструкция для ИИ, секция и код","ЖИ-ге нұсқаулық, бөлім және код"],["Code in the results file","Код в файле сдачи","Тапсыру файлындағы код"],
+["When replacing a criterion, keep the code of the one it replaces","При замене критерия оставьте код заменённого","Критерийді ауыстырғанда, ауыстырылғанның кодын қалдырыңыз"],["checked","проверено","тексерілді"]];
 const M={ru:{},kz:{}};D.forEach(([e,r,k])=>{M.ru[e]=r;M.kz[e]=k});
 let lang="ru",role="reviewer",page="list",tm;
 const t=s=>(M[lang]&&M[lang][s])||s;
@@ -189,13 +190,17 @@ const CLID=()=>(cl&&cl.checklist_id)||"chat-quality";
 const dirty=()=>!!(cl&&draft)&&JSON.stringify(fromUI(draft))!==JSON.stringify(fromUI(toUI(cl)));
 const wsum=d=>d.criteria.reduce((a,k)=>a+(k.type==="flag"?0:Number(k.weight)||0),0);
 
+/* Код критерия в файле сдачи: 8 кодов из формата организаторов. При замене критерия новый получает код заменённого */
+const CODES=["contact","discovery","identification","consultation","empathy","dialogue","closure","critical"];
+const codeOpts=cur=>CODES.concat(cur&&!CODES.includes(cur)?[cur]:[]).map(c=>`<option value="${esc(c)}"${c===cur?" selected":""}>${t("Code in the results file")}: ${esc(c)}</option>`).join("");
 function editor(){if(!draft){$("#clr").innerHTML=`<tr><td colspan="5" class="em">${t("Checklist not loaded")}</td></tr>`;$("#clv").textContent="";$("#wsum").textContent="";return}
  $("#clv").textContent=(draft.name||draft.checklist_id)+" · "+t("Version")+" "+(cl?cl.version:"—");
  const secs=draft.sections||[];
  /* Основное на виду (название, вес, тип, N/A); инструкция для ИИ и секция - по клику */
  $("#clr").innerHTML=draft.criteria.map((k,i)=>`<tr data-k="${i}"><td style="min-width:320px"><input data-f="name" value="${esc(k.name)}"><span class="sub">${esc(k.id)}${k.code&&k.code!==k.id?" · "+esc(k.code):""}</span>
 <details class="cri"><summary>${t("Instruction for the AI and section")}</summary><textarea data-f="instruction" rows="5">${esc(k.instruction||"")}</textarea>
-<select data-f="section"><option value="">${t("Section")}: —</option>${secs.map(s=>`<option value="${esc(s.id)}"${k.section===s.id?" selected":""}>${t("Section")}: ${esc(s.name||s.id)}</option>`).join("")}</select></details></td>
+<select data-f="section"><option value="">${t("Section")}: —</option>${secs.map(s=>`<option value="${esc(s.id)}"${k.section===s.id?" selected":""}>${t("Section")}: ${esc(s.name||s.id)}</option>`).join("")}</select>
+<select data-f="code" title="${esc(t("When replacing a criterion, keep the code of the one it replaces"))}">${codeOpts(k.code)}</select></details></td>
 <td><input class="nm" data-f="weight" type="number" min="0" step="any" value="${esc(k.weight)}"${k.type==="flag"?" disabled":""}></td>
 <td><select data-f="type">${[["yes_no","Yes/No"],["scale","Scale"],["flag","Flag"]].map(([v,l])=>`<option value="${v}"${k.type===v?" selected":""}>${t(l)}</option>`).join("")}</select>
 ${k.type==="scale"?`<input class="nm" data-f="scale" style="margin-top:6px" title="${esc(t("Scale values"))}" value="${esc((k.scale||[]).join(","))}">`:""}</td>
@@ -223,7 +228,7 @@ async function saveCL(){if(!draft)return;const d=fromUI(draft);
  if(Math.abs(wsum(d)-100)>1e-9){toast(t("Weights must sum to 100"));return}
  if(!ONLINE){fail();return}
  const oldV=cl&&cl.version,r=await api("POST","/checklists",d);if(!r){fail();return}
- toast(t("Checklist saved")+" · "+t("Version")+" "+r.version);await loadCL();
+ toast(t("Checklist saved")+" · "+t("Version")+" "+r.version+(r.warnings&&r.warnings.length?" · ⚠ "+r.warnings.join(" · "):""),r.warnings&&r.warnings.length?12000:2600);await loadCL();
  lastDiff=null;if(oldV&&r.version&&r.version!==oldV){const df=await api("GET",`/checklists/${enc(r.checklist_id||CLID())}/diff?from_version=${enc(oldV)}&to_version=${enc(r.version)}`);if(df)lastDiff={from:oldV,to:r.version,d:df}}
  render()}
 async function reeval(){if(!ONLINE){fail();return}if(dirty()){toast(t("Unsaved changes"));return}
