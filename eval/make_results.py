@@ -136,6 +136,8 @@ def main() -> None:
         if e["ok"]:
             results.append(to_result(e["evaluation"], checklist, lengths.get(cid)))
             models.append(e["evaluation"]["model"])
+            if e["evaluation"].get("verify_model"):   # модель второго мнения тоже указываем в файле сдачи
+                models.append(e["evaluation"]["verify_model"])
             cost += e["evaluation"].get("cost_usd") or 0
         else:
             results.append(error_result(cid, e["error"]))

@@ -49,7 +49,9 @@ def _throttle() -> None:
         _last_call[0] = time.monotonic()
 
 
-def _cost(resp, tin: int, tout: int) -> float:
+def _cost(resp, tin: int, tout: int, model: str = "") -> float:
+    if model and model == settings.VERIFY_MODEL and (settings.VERIFY_PRICE_IN_PER_M or settings.VERIFY_PRICE_OUT_PER_M):
+        return tin / 1e6 * settings.VERIFY_PRICE_IN_PER_M + tout / 1e6 * settings.VERIFY_PRICE_OUT_PER_M
     if settings.PRICE_IN_PER_M or settings.PRICE_OUT_PER_M:
         return tin / 1e6 * settings.PRICE_IN_PER_M + tout / 1e6 * settings.PRICE_OUT_PER_M
     try:
@@ -85,8 +87,9 @@ def _call(model: str, messages: list[dict], temperature: float):
     return litellm.completion(**kwargs)
 
 
-def complete(messages: list[dict], temperature: float = 0.0) -> LLMResponse:
-    models = [settings.MODEL] + [m for m in settings.FALLBACK_MODELS if m != settings.MODEL]
+def complete(messages: list[dict], temperature: float = 0.0, models: list[str] | None = None) -> LLMResponse:
+    """models: явный список моделей (например, только проверяющая модель); по умолчанию CQA_MODEL + резерв."""
+    models = models or ([settings.MODEL] + [m for m in settings.FALLBACK_MODELS if m != settings.MODEL])
     mi, fails_on_model, last_error = 0, 0, None
     for attempt in range(settings.LLM_RETRIES + 1):
         model = models[mi]
@@ -95,7 +98,7 @@ def complete(messages: list[dict], temperature: float = 0.0) -> LLMResponse:
             resp = _call(model, messages, temperature)
             u = resp.usage
             tin, tout = int(u.prompt_tokens), int(u.completion_tokens)
-            return LLMResponse(resp.choices[0].message.content or "", tin, tout, _cost(resp, tin, tout), model)
+            return LLMResponse(resp.choices[0].message.content or "", tin, tout, _cost(resp, tin, tout, model), model)
         except Exception as e:  # noqa: BLE001 - классифицируем ниже по имени класса LiteLLM
             last_error, name = e, type(e).__name__
             if any(x in name for x in SWITCH_MODEL):

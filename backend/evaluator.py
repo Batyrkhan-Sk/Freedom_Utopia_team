@@ -25,13 +25,17 @@ class Usage:
         self.tin = self.tout = self.calls = 0
         self.cost = 0.0
         self.model = ""
+        self.verify_model = ""
 
-    def add(self, r):
+    def add(self, r, verify: bool = False):
         self.tin += r.tokens_in
         self.tout += r.tokens_out
         self.cost += r.cost_usd
         self.calls += 1
-        self.model = r.model
+        if verify:
+            self.verify_model = r.model
+        else:
+            self.model = r.model
 
 
 def parse_output(text: str) -> LLMOutput:
@@ -76,7 +80,43 @@ def _merge_votes(c, votes: list[dict]) -> dict:
 REUSED_FIELDS = ("answer", "evidence_msg_ids", "checked_range", "na_reason", "explanation", "confidence")
 
 
-def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete, reuse: dict | None = None) -> dict:
+def _verify_llm() -> LLMFn | None:
+    if not settings.VERIFY_MODEL:
+        return None
+    return lambda messages, temperature=0.0: complete(messages, temperature, models=[settings.VERIFY_MODEL])
+
+
+def _second_opinion(checklist, conv, msgs, facts, norm, ask_ids, usage, verify_llm) -> dict:
+    """Грубая ошибка - самое дорогое ложное срабатывание. Если основная модель поставила «yes» по флаговому
+    критерию, вторая (обычно более сильная) модель перепроверяет только его.
+    Согласна - подтверждаем. Не согласна - решает вторая модель, оценка уходит на проверку человеку.
+    Сбой второй модели не ломает оценку: остаётся ответ основной."""
+    out = {}
+    for c in checklist.criteria:
+        if c.type != "flag" or c.id not in ask_ids or norm[c.id]["answer"] != "yes":
+            continue
+        first = norm[c.id]
+        try:
+            u2 = Usage()
+            second = _ask(verify_llm, checklist, conv, msgs, facts, [c.id], u2)[c.id]
+            usage.tin += u2.tin; usage.tout += u2.tout; usage.cost += u2.cost; usage.calls += u2.calls
+            usage.verify_model = u2.model
+        except Exception as e:  # noqa: BLE001 - проверка не обязательна
+            out[c.id] = {"status": "failed", "error": f"{type(e).__name__}: {str(e)[:200]}"}
+            continue
+        agree = second["answer"] == first["answer"]
+        out[c.id] = {"status": "confirmed" if agree else "disputed", "model": u2.model,
+                     "first_answer": first["answer"], "first_explanation": first["explanation"],
+                     "second_answer": second["answer"], "second_explanation": second["explanation"]}
+        if agree:
+            norm[c.id] = {**first, "confidence": max(first["confidence"], second["confidence"])}
+        else:   # решает более сильная модель, но человек должен посмотреть
+            norm[c.id] = {**second, "confidence": min(second["confidence"], settings.LOW_CONFIDENCE - 0.01)}
+    return out
+
+
+def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete, reuse: dict | None = None,
+             verify_llm: LLMFn | None = None) -> dict:
     """reuse: {criterion_id: запись критерия из прошлой оценки} - эти критерии не переспрашиваем у ИИ
     (переоценка после правки чек-листа: ИИ спрашиваем только об изменённых и новых критериях)."""
     msgs = number_messages(conv["transcript"])
@@ -101,6 +141,9 @@ def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete, reuse: dic
                                   temperature=settings.VOTE_TEMPERATURE)[c.id])
             norm[c.id] = _merge_votes(c, votes)
 
+    verify_llm = verify_llm or (_verify_llm() if llm is complete else None)
+    second = _second_opinion(checklist, conv, msgs, facts, norm, ask_ids, usage, verify_llm) if verify_llm else {}
+
     sc = score(checklist, {cid: v["answer"] for cid, v in norm.items()})
     criteria = []
     for c in checklist.criteria:
@@ -112,11 +155,12 @@ def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete, reuse: dic
             "na_reason": v["na_reason"], "explanation": v["explanation"],
             "confidence": v["confidence"], "needs_review": v["confidence"] < settings.LOW_CONFIDENCE,
             "reused": c.id in reuse,
+            **({"second_opinion": second[c.id]} if c.id in second else {}),
         })
     return {
         "conversation_id": conv["conversation_id"],
         "checklist_id": checklist.checklist_id, "checklist_version": checklist.version,
-        "model": usage.model, "llm_calls": usage.calls,
+        "model": usage.model, "verify_model": usage.verify_model or None, "llm_calls": usage.calls,
         "tokens": {"in": usage.tin, "out": usage.tout}, "cost_usd": round(usage.cost, 6),
         "facts": facts, "criteria": criteria, "sections": sc["sections"],
         "total": sc["total"], "critical_error": sc["critical_error"],
