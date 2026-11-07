@@ -55,7 +55,9 @@ def test_parse_call_timestamp_7_digits():
     assert parse_ts("2026-01-01T10:00:01.1234567+05:00") - parse_ts("2026-01-01T10:00:00.0000000+05:00") > 1.12
 
 
-def test_pipeline_happy_path(checklist):
+def test_pipeline_happy_path(checklist, monkeypatch):
+    from backend.config import settings
+    monkeypatch.setattr(settings, "RESAMPLE", "")   # как в чек-листе, независимо от CQA_RESAMPLE в .env
     llm = FakeLLM(json.dumps(GOOD))
     ev = evaluate(CONV, checklist, llm=llm)
     assert ev["total"] == 92.31

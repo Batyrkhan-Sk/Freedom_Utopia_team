@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import re
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
@@ -16,6 +15,7 @@ from . import db
 from .appeals import apply_decision
 from .config import settings
 from .evaluator import evaluate
+from .ingest import extract_audio_src, fetch_group, parse_pasted_text, validate_record
 from .models import Checklist
 
 app = FastAPI(title="CQA")
@@ -34,11 +34,10 @@ def startup():
 @app.post("/import")
 def import_group(group_id: str):
     """Прокси к API организаторов (решает CORS). URL задаётся переменной CQA_ORG_API_URL."""
-    r = httpx.get(settings.ORG_API_URL, params={"group_id": group_id}, timeout=60)
-    body = r.json()
-    if not body.get("isSuccess"):
-        raise HTTPException(502, body.get("error") or "API организаторов вернул ошибку")
-    records = body["data"]["records"]
+    try:
+        records = fetch_group(group_id)
+    except ValueError as e:
+        raise HTTPException(502, str(e))
     db.save_conversations(group_id, records)
     return {"imported": len(records)}
 
@@ -62,11 +61,41 @@ def audio(cid: str):
     conv = db.get_conversation(cid)
     if not conv or not conv.get("audio_url"):
         raise HTTPException(404)
-    html = httpx.get(conv["audio_url"], timeout=20, follow_redirects=True).text
-    m = re.search(r"https?://[^\s\"'<>]+\.mp3[^\s\"'<>]*", html)
-    if not m:
-        raise HTTPException(502, "mp3 не найден в плеере: проверьте разметку страницы")
-    return RedirectResponse(m.group(0).replace("&amp;", "&"))
+    page = httpx.get(conv["audio_url"], timeout=20, follow_redirects=True).text
+    src = extract_audio_src(page)
+    if not src:
+        raise HTTPException(502, "ссылка на запись не найдена в странице плеера")
+    return RedirectResponse(src)
+
+
+class PasteIn(BaseModel):
+    text: str
+    channel: str = "agent chat"
+    language: str | None = None
+    conversation_id: str | None = None
+
+
+@app.post("/conversations")
+def upload_conversations(body: dict | list[dict]):
+    """JSON-файл: одна запись или массив в формате API организаторов."""
+    records = body if isinstance(body, list) else [body]
+    try:
+        records = [validate_record(r) for r in records]
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    db.save_conversations("upload", records)
+    return {"imported": len(records), "conversation_ids": [r["conversation_id"] for r in records]}
+
+
+@app.post("/conversations/text")
+def paste_conversation(body: PasteIn):
+    """Вставленный текст: «мм:сс роль: текст» по строке на реплику."""
+    try:
+        rec = parse_pasted_text(body.text, body.channel, body.language, body.conversation_id)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    db.save_conversations("upload", [rec])
+    return {"imported": 1, "conversation_id": rec["conversation_id"], "messages": len(rec["transcript"])}
 
 
 # ---------- чек-листы ----------

@@ -11,9 +11,26 @@ SYSTEM_HEAD = (
     "Оцениваешь ТОЛЬКО оператора (speaker=operator). Реплики bot и system - контекст.\n"
     "Диалог может быть на русском, казахском или английском.\n"
     "Ссылаться на доказательства можно только по номерам реплик [N] из диалога. Не выдумывай номера.\n"
-    "Блок ФАКТЫ посчитан системой и достоверен, не пересчитывай его.\n"
+    "Блок ФАКТЫ посчитан системой по меткам времени и системным сообщениям. Это подсказки: "
+    "время и события в нём точные, но решение по критерию принимай по самому диалогу.\n"
+    "Отсутствие события в ФАКТАХ не означает нарушения: например, если подтверждения личности нет, "
+    "сначала реши, требовалась ли идентификация вообще.\n"
     "Баллы и итог не считай: верни только ответы по критериям.\n"
 )
+
+CALL_NOTE = (
+    "Это телефонный звонок: текст получен распознаванием речи, в нём есть ошибки и повторы. "
+    "Не штрафуй оператора за ошибки распознавания и за скрытые данные ([Имя скрыто] и т.п.). "
+    "В звонках идентификацию подтверждает сам оператор в речи (например, «идентификация пройдена»), "
+    "системного сообщения об этом может не быть.\n"
+)
+
+END_LABEL = {
+    "connection_lost": "соединение прервано",
+    "client_left": "клиент покинул чат",
+    "client_ended_call": "клиент завершил звонок",
+    "chat_closed_by_operator": "оператор закрыл чат",
+}
 
 OUTPUT_SPEC = (
     "ФОРМАТ ОТВЕТА - только JSON, без markdown и пояснений вокруг:\n"
@@ -36,24 +53,46 @@ def allowed_values(c: Criterion) -> list[str]:
 
 
 def criterion_block(c: Criterion) -> str:
+    steps = ""
+    if c.type == "scale" and c.scale_descriptions:
+        ordered = sorted(c.scale_descriptions.items(), key=lambda kv: -float(kv[0]))
+        steps = "Ступени (выбери одну, подходящую первой сверху вниз):\n" + "".join(
+            f"  {k}: {v}\n" for k, v in ordered)
     return (
         f"### {c.id} - {c.name}\n"
         f"Тип: {TYPE_LABEL[c.type]}. Допустимые answer: {', '.join(allowed_values(c))}.\n"
         f"N/A: {'разрешён' if c.na_allowed else 'не разрешён'}.\n"
         f"Инструкция: {c.instruction}\n"
+        + steps
     )
 
 
 def facts_to_text(f: dict) -> str:
     ev = ", ".join(f"[{e['idx']}] {e['type']}" for e in f["events"]) or "нет"
-    return (
-        f"- Реплик в диалоге: {f['n_messages']}\n"
-        f"- Первая реплика оператора: {f['first_operator_idx']}\n"
-        f"- Время первой реакции оператора, сек: {f['first_reaction_sec']} "
-        f"(от: {f['reaction_ref']}); порог превышен: {f['reaction_exceeded_threshold']}\n"
-        f"- Личность подтверждена системным сообщением: {'да' if f['identity_confirmed_by_system'] else 'нет'}\n"
-        f"- Системные события: {ev}"
-    )
+    lines = [
+        f"- Реплик в диалоге: {f['n_messages']}",
+        f"- Первая реплика оператора: [{f['first_operator_idx']}]",
+        f"- Язык клиента: {f.get('client_language')}; язык первой реплики оператора: {f.get('first_operator_language')}",
+    ]
+    if f["first_reaction_sec"] is not None:
+        lines.append(f"- Время первой реакции оператора: {f['first_reaction_sec']} сек "
+                     f"(от {'эскалации' if f['reaction_ref'] == 'escalation' else 'последней реплики клиента'}); "
+                     f"порог 3 мин {'ПРЕВЫШЕН' if f['reaction_exceeded_threshold'] else 'не превышен'}")
+    if f["identity_confirmed_idx"] is not None:
+        lines.append(f"- Системное сообщение о подтверждении личности: [{f['identity_confirmed_idx']}]")
+    else:
+        lines.append("- Системного сообщения о подтверждении личности нет "
+                     "(это не нарушение само по себе: проверь, требовалась ли идентификация)")
+    if f.get("end_event"):
+        after = f.get("end_after_last_client_sec")
+        lines.append(f"- Диалог закончился событием: [{f['end_event_idx']}] {END_LABEL.get(f['end_event'], f['end_event'])}"
+                     + (f", через {after} сек после последней реплики клиента" if after is not None else ""))
+    else:
+        lines.append(f"- Системного события о завершении нет; последняя реплика: {f.get('last_message_speaker')}")
+    if f.get("wait_events"):
+        lines.append("- Ожидание клиента: " + ", ".join(f"[{e['idx']}] {e['type']}" for e in f["wait_events"]))
+    lines.append(f"- Все системные события: {ev}")
+    return "\n".join(lines)
 
 
 def transcript_to_text(msgs: list[dict]) -> str:
@@ -70,7 +109,9 @@ def build_messages(checklist: Checklist, conv: dict, msgs: list[dict], facts: di
         + "\n" + OUTPUT_SPEC
     )
     user = (
-        f"Канал: {conv.get('channel')}, язык: {conv.get('language')}\n\n"
+        f"Канал: {conv.get('channel')}, язык: {conv.get('language')}\n"
+        + (CALL_NOTE if conv.get("channel") == "voice call" else "")
+        + "\n"
         f"ФАКТЫ:\n{facts_to_text(facts)}\n\n"
         f"ДИАЛОГ:\n{transcript_to_text(msgs)}"
     )

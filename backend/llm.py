@@ -1,6 +1,15 @@
-"""Единственное место, где вызывается модель. Провайдер меняется строкой CQA_MODEL (через LiteLLM)."""
+"""Единственное место, где вызывается модель. Провайдер меняется строкой CQA_MODEL (через LiteLLM).
+
+Устойчивость к лимитам бесплатных тарифов:
+- ограничение частоты запросов (CQA_RPM), общее для всех потоков пакетной оценки;
+- 429: ждём столько, сколько просит провайдер; 503/таймаут: 5 -> 15 -> 45 сек;
+- после двух неудач подряд - следующая модель из CQA_FALLBACK_MODELS.
+"""
 from __future__ import annotations
 
+import re
+import threading
+import time
 from dataclasses import dataclass
 from typing import Callable
 
@@ -19,6 +28,24 @@ class LLMResponse:
 # Контракт для подмены в тестах: llm(messages, temperature) -> LLMResponse
 LLMFn = Callable[..., LLMResponse]
 
+_lock = threading.Lock()
+_last_call = [0.0]
+
+TRANSIENT = ("RateLimit", "ServiceUnavailable", "Timeout", "InternalServer", "APIConnection", "BadGateway")
+SWITCH_MODEL = ("PaymentRequired", "BudgetExceeded", "NotFound")   # эта модель недоступна -> следующая
+_RETRY_IN = re.compile(r"(?:retry|try again)\s+in\s+([0-9.]+)\s*s", re.I)
+
+
+def _throttle() -> None:
+    if settings.RPM <= 0:
+        return
+    interval = 60.0 / settings.RPM
+    with _lock:
+        wait = interval - (time.monotonic() - _last_call[0])
+        if wait > 0:
+            time.sleep(wait)
+        _last_call[0] = time.monotonic()
+
 
 def _cost(resp, tin: int, tout: int) -> float:
     if settings.PRICE_IN_PER_M or settings.PRICE_OUT_PER_M:
@@ -30,14 +57,49 @@ def _cost(resp, tin: int, tout: int) -> float:
         return 0.0
 
 
-def complete(messages: list[dict], temperature: float = 0.0) -> LLMResponse:
-    import litellm  # импорт здесь, чтобы тесты шли без litellm
+def _supports_temperature(model: str) -> bool:
+    # Текущие модели Claude отклоняют temperature/top_p/top_k (ошибка 400)
+    return not (model.startswith("anthropic/") or "claude" in model)
 
-    kwargs = dict(model=settings.MODEL, messages=messages, temperature=temperature,
-                  max_tokens=settings.MAX_TOKENS)
+
+def _call(model: str, messages: list[dict], temperature: float):
+    import litellm  # импорт здесь, чтобы тесты шли без litellm
+    litellm.suppress_debug_info = True
+
+    kwargs = dict(model=model, messages=messages, max_tokens=settings.MAX_TOKENS, timeout=settings.LLM_TIMEOUT)
+    if _supports_temperature(model):
+        kwargs["temperature"] = temperature
     if settings.JSON_MODE:
         kwargs["response_format"] = {"type": "json_object"}
-    resp = litellm.completion(**kwargs)
-    u = resp.usage
-    tin, tout = int(u.prompt_tokens), int(u.completion_tokens)
-    return LLMResponse(resp.choices[0].message.content or "", tin, tout, _cost(resp, tin, tout), settings.MODEL)
+    if settings.REASONING_EFFORT:
+        kwargs["reasoning_effort"] = settings.REASONING_EFFORT
+    return litellm.completion(**kwargs)
+
+
+def complete(messages: list[dict], temperature: float = 0.0) -> LLMResponse:
+    models = [settings.MODEL] + [m for m in settings.FALLBACK_MODELS if m != settings.MODEL]
+    mi, fails_on_model, last_error = 0, 0, None
+    for attempt in range(settings.LLM_RETRIES + 1):
+        model = models[mi]
+        _throttle()
+        try:
+            resp = _call(model, messages, temperature)
+            u = resp.usage
+            tin, tout = int(u.prompt_tokens), int(u.completion_tokens)
+            return LLMResponse(resp.choices[0].message.content or "", tin, tout, _cost(resp, tin, tout), model)
+        except Exception as e:  # noqa: BLE001 - классифицируем ниже по имени класса LiteLLM
+            last_error, name = e, type(e).__name__
+            if any(x in name for x in SWITCH_MODEL):
+                if mi + 1 >= len(models):
+                    raise
+                mi, fails_on_model = mi + 1, 0
+                continue
+            if not any(x in name for x in TRANSIENT) or attempt == settings.LLM_RETRIES:
+                raise
+            m = _RETRY_IN.search(str(e))
+            delay = float(m.group(1)) + 1 if m else min(5 * 3 ** fails_on_model, 60)
+            fails_on_model += 1
+            if fails_on_model >= 2 and mi + 1 < len(models):
+                mi, fails_on_model = mi + 1, 0
+            time.sleep(min(delay, 90))
+    raise last_error  # pragma: no cover

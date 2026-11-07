@@ -44,3 +44,27 @@ def test_appeal_recalculates(checklist):
     ev = {"total": 92.31, "criteria": [{"criterion_id": k, "answer": v} for k, v in BASE.items()]}
     res = apply_decision(ev, checklist, "c07_closing", "yes", "Оператор предложил помощь в [10]")
     assert res["original_total"] == 92.31 and res["final_total"] == 100.0 and res["changed"]
+
+
+# ---- Эталон: итоги по 21 диалогу из data/answer_key/draft.json ----
+import json  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+import pytest  # noqa: E402
+
+_KEY = json.loads((Path(__file__).resolve().parent.parent / "data/answer_key/draft.json").read_text("utf-8"))
+
+
+@pytest.mark.parametrize("cid", list(_KEY["conversations"]))
+def test_answer_key_totals(checklist, cid):
+    conv = _KEY["conversations"][cid]
+    r = score(checklist, {k: v["answer"] for k, v in conv["criteria"].items()})
+    assert r["total"] == conv["expected_total"]
+    assert r["critical_error"] == conv["critical_error"]
+
+
+def test_round_half_up_ignores_float_noise():
+    from backend.scoring import round_half_up
+    assert 20.5 / 80 * 100 != 25.625          # float-шум
+    assert round_half_up(20.5 / 80 * 100) == 25.63
+    assert round_half_up(2.675) == 2.68 and round_half_up(1.005) == 1.01
