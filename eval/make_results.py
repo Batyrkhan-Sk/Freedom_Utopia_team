@@ -2,6 +2,7 @@
 
 python -m eval.make_results --group DEV             # все 65 диалогов DEV
 python -m eval.make_results --group PROD            # 10 контрольных чатов (последний час)
+python -m eval.make_results --group PROD --api-group CONTROL   # если в API у набора другое имя group_id
 python -m eval.make_results --group DEV --ids p1-ru-001,p1-kz-003   # часть набора (файл не пишется)
 python -m eval.make_results --group PROD --check    # только проверить уже готовый файл
 
@@ -53,7 +54,8 @@ def active_checklist() -> Checklist:
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--group", required=True, help="DEV или PROD")
+    p.add_argument("--group", required=True, help="DEV или PROD: папка results/dev или results/prod")
+    p.add_argument("--api-group", help="group_id в API организаторов, если отличается от --group")
     p.add_argument("--ids", help="через запятую: оценить только эти (для проверки, файл сдачи не пишется)")
     p.add_argument("--workers", type=int, default=settings.BATCH_WORKERS)
     p.add_argument("--fresh", action="store_true", help="не брать оценки из кэша")
@@ -66,7 +68,7 @@ def main() -> None:
     out = ROOT / "results" / group.lower() / "results.json"
     t_start = time.time()
 
-    records = load_records(group, a.refetch)
+    records = load_records(a.api_group or group, a.refetch)
     ids_all = [r["conversation_id"] for r in records]
     lengths = {r["conversation_id"]: len(r["transcript"]) for r in records}
     checklist = active_checklist()

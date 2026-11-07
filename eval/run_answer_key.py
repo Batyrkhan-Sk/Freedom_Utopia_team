@@ -140,7 +140,9 @@ def main() -> None:
         return
     ids = a.ids.split(",") if a.ids else list(key)
     RUNS.mkdir(parents=True, exist_ok=True)
-    out = a.resume or RUNS / f"{datetime.now():%Y%m%d-%H%M}_{settings.MODEL.replace('/', '_')}.json"
+    # секунды и режим опроса в имени: параллельные прогоны не пишут в один файл
+    vote = f"vote{settings.RESAMPLE}" if settings.RESAMPLE else "votecl"
+    out = a.resume or RUNS / f"{datetime.now():%Y%m%d-%H%M%S}_{settings.MODEL.replace('/', '_')}_{vote}.json"
     print(f"Модель: {settings.MODEL}; резерв: {settings.FALLBACK_MODELS or 'нет'}; RPM: {settings.RPM or '∞'}; "
           f"повторный опрос: {settings.RESAMPLE or 'как в чек-листе'}\nРезультаты: {out}", flush=True)
     results = run(ids, out, checklist, {k: key[k] for k in ids})
