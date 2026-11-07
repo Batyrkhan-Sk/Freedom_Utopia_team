@@ -45,6 +45,11 @@ class Settings:
     RESAMPLE = os.getenv("CQA_RESAMPLE", "")
     VOTE_TEMPERATURE = float(os.getenv("CQA_VOTE_TEMPERATURE", "0.7"))  # для повторного опроса
     LOW_CONFIDENCE = float(os.getenv("CQA_LOW_CONFIDENCE", "0.7"))      # ниже -> "нужна проверка"
+    # Второе мнение по грубым ошибкам: если основная модель нашла грубую ошибку, её перепроверяет эта модель
+    # (например anthropic/claude-sonnet-5-5). Пусто - выключено.
+    VERIFY_MODEL = os.getenv("CQA_VERIFY_MODEL", "")
+    VERIFY_PRICE_IN_PER_M = float(os.getenv("CQA_VERIFY_PRICE_IN_PER_M", "0"))
+    VERIFY_PRICE_OUT_PER_M = float(os.getenv("CQA_VERIFY_PRICE_OUT_PER_M", "0"))
     # Цена за 1 млн токенов (USD). Берите из прайса провайдера. 0 -> попробуем взять из litellm.
     PRICE_IN_PER_M = float(os.getenv("CQA_PRICE_IN_PER_M", "0"))
     PRICE_OUT_PER_M = float(os.getenv("CQA_PRICE_OUT_PER_M", "0"))

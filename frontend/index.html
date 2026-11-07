@@ -154,6 +154,10 @@ const D=[["Checklist","Чек-лист","Тексеру парағы"],["Convers
 ["shown","показано","көрсетілді"],["for evaluation","к оценке","бағалауға"],["was","было","бұрын"],["total","итог","қорытынды"],["Open","Открыть","Ашу"],
 ["Data ▾","Данные ▾","Деректер ▾"],["All","Все","Барлығы"],["Gross errors","Грубые ошибки","Өрескел қателер"],["Technical details","Технические детали","Техникалық мәліметтер"],
 ["Instruction for the AI and section","Инструкция для ИИ, секция и код","ЖИ-ге нұсқаулық, бөлім және код"],["Code in the results file","Код в файле сдачи","Тапсыру файлындағы код"],
+["confirmed by a second model","подтверждено второй моделью","екінші модель растады"],["The models disagree","Модели разошлись","Модельдер келіспеді"],
+["first model","первая модель","бірінші модель"],["second model","вторая модель","екінші модель"],
+["The result follows the second model; a person should check it.","Итог - по второй модели; нужна проверка человеком.","Қорытынды екінші модель бойынша; адам тексеруі керек."],
+["second model check failed","проверка второй моделью не удалась","екінші модельмен тексеру сәтсіз"],
 ["When replacing a criterion, keep the code of the one it replaces","При замене критерия оставьте код заменённого","Критерийді ауыстырғанда, ауыстырылғанның кодын қалдырыңыз"],["checked","проверено","тексерілді"]];
 const M={ru:{},kz:{}};D.forEach(([e,r,k])=>{M.ru[e]=r;M.kz[e]=k});
 let lang="ru",role="reviewer",page="list",tm;
@@ -307,6 +311,14 @@ function appealUI(c,k){const list=appealsFor(c.criterion_id),open=list.find(a=>a
   return h+"</div>"}
  if(role==="operator"&&cur.ev){const id=esc(c.criterion_id);h+=`<div style="margin-top:6px"><button class="btn s" data-fa="${id}">${t("Dispute")}</button></div><div class="fm hid" id="fa-${id}"><textarea id="ft-${id}" placeholder="${esc(t("Your comment"))}"></textarea><button class="btn pr s" data-sa="${id}">${t("Send appeal")}</button></div>`}
  return h||(last?"":"")}
+/* Второе мнение по грубой ошибке: согласие - короткая пометка, расхождение - оба мнения для проверяющего */
+const shortModel=m=>String(m||"").split("/").pop();
+function secondOpinion(c,k){const so=c.second_opinion;if(!so)return "";
+ if(so.status==="confirmed")return `<div class="note2" style="color:var(--gd)">✓ ${t("confirmed by a second model")} (${esc(shortModel(so.model))})</div>`;
+ if(so.status==="failed")return `<div class="note2">${t("second model check failed")}</div>`;
+ return `<div class="ap" style="border-color:#f1d9a6;background:var(--as)"><b>${t("The models disagree")}.</b> ${t("The result follows the second model; a person should check it.")}
+<div style="margin-top:6px"><small>${t("first model")}</small> <span class="pl ${cls(k,so.first_answer)}">${esc(lab(k,so.first_answer))}</span> ${esc(so.first_explanation||"")}</div>
+<div style="margin-top:6px"><small>${t("second model")} (${esc(shortModel(so.model))})</small> <span class="pl ${cls(k,so.second_answer)}">${esc(lab(k,so.second_answer))}</span> ${esc(so.second_explanation||"")}</div></div>`}
 function card(){if(!cur)return;const C=cur.conv,ev=cur.ev,T=C.messages;
  $("#ct").textContent=C.conversation_id;$("#cm").textContent=[C.language,t(C.channel||""),C.group_id].filter(Boolean).join(" · ");
  $("#cev").textContent=t(ev?"Re-evaluate":"Evaluate");
@@ -334,7 +346,7 @@ ${Array.isArray(ev.asked_criteria)&&ev.asked_criteria.length&&ev.asked_criteria.
   const notes=[orig!==undefined&&orig!==null&&String(orig)!==String(c.answer)?t("Original")+": "+lab(k,orig)+" · "+t("changed on appeal"):"",c.reused?t("from previous evaluation"):""].filter(Boolean);
   return `<div class="cr"><div class="crh"><b title="${esc(tip)}">${esc(c.name||c.criterion_id)}</b><span>${c.needs_review?`<span class="pl am">${t("Needs review")}</span>`:""}<span class="pl ${cls(k,c.answer)}">${esc(lab(k,c.answer))}</span></span></div>
 ${notes.length?`<div class="note2">${esc(notes.join(" · "))}</div>`:""}
-<p class="ex">${c.answer==="na"?"N/A: "+esc(c.na_reason||c.explanation||""):esc(c.explanation||"")}</p>${evidence(c)}${appealUI(c,k)}</div>`}).join("")}
+<p class="ex">${c.answer==="na"?"N/A: "+esc(c.na_reason||c.explanation||""):esc(c.explanation||"")}</p>${evidence(c)}${secondOpinion(c,k)}${appealUI(c,k)}</div>`}).join("")}
 function jump(i){const el=$("#m"+i);if(!el)return;$$(".m.hl").forEach(x=>x.classList.remove("hl"));el.classList.add("hl");el.scrollIntoView({behavior:"smooth",block:"center"});
  const a=$("#au audio"),m=cur&&cur.conv.messages[i];if(a&&m&&typeof m.t==="number"&&isFinite(m.t)&&m.t>=0){try{a.currentTime=m.t}catch(_){}}}
 

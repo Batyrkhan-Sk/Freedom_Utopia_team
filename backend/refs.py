@@ -38,4 +38,9 @@ def humanize_evaluation(ev: dict | None, n_msgs: int) -> dict | None:
             c["explanation"] = human_refs(c.get("explanation"), n_msgs)
         for k in ("na_reason", "ai_explanation"):
             c[k] = human_refs(c.get(k), n_msgs)
+        so = c.get("second_opinion")
+        if isinstance(so, dict):
+            for k in ("first_explanation", "second_explanation"):
+                if k in so:
+                    so[k] = human_refs(so[k], n_msgs)
     return out
