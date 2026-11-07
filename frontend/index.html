@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Freedom Broker · CQA</title>
+<!-- Один самодостаточный файл без внешних скриптов и шрифтов: можно встроить в Dynamics 365 как веб-ресурс.
+     Бэкенд: window.CQA_API = "https://host:port" (иначе - тот же адрес, с которого открыта страница, например /ui). -->
+<style>
+:root{--g:#00a86b;--gd:#008653;--gs:#e8f7f0;--ink:#17231e;--mu:#75827b;--ln:#e6ece8;--bg:#f5f8f6;--rd:#d94b4b;--rs:#fff0ef;--am:#b7791f;--as:#fff7e8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--ln);padding:10px 24px;position:sticky;top:0;z-index:5}
+.brand{display:flex;gap:9px;align-items:center;font-weight:800;margin-right:10px}.mark{width:32px;height:32px;border-radius:10px;background:var(--g);color:#fff;display:grid;place-items:center}
+nav{display:flex;gap:4px;flex:1;flex-wrap:wrap}.nb{border:0;background:0;padding:9px 13px;border-radius:9px;color:#637169;font-weight:600}.nb.on{background:var(--gs);color:var(--gd);font-weight:700}
+.seg{display:flex;padding:3px;background:#f2f6f3;border-radius:9px}.seg button{border:0;background:0;padding:6px 11px;border-radius:7px;font-size:12px;color:#68766e}.seg .on{background:#fff;color:var(--gd);font-weight:700}
+select,input,textarea{border:1px solid var(--ln);border-radius:8px;padding:7px 9px;background:#fff;color:var(--ink)}
+main{max-width:1400px;margin:0 auto;padding:24px}h1{font-size:24px;margin:0;letter-spacing:-.5px}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px;flex-wrap:wrap}.acts{display:flex;gap:8px;flex-wrap:wrap}
+.card{background:#fff;border:1px solid var(--ln);border-radius:14px;overflow:hidden;margin-bottom:14px}.ch{padding:13px 16px;font-weight:700;border-bottom:1px solid var(--ln)}
+.btn{border:1px solid var(--ln);background:#fff;border-radius:9px;padding:8px 13px;font-weight:650;color:#405047}.btn:hover:not(:disabled){border-color:#b7d9c8}.btn.pr{background:var(--g);border-color:var(--g);color:#fff}.btn.s{padding:5px 9px;font-size:12px}
+.lk{border:0;background:0;padding:0;color:var(--gd);font-weight:700;text-align:left}.lk:hover{text-decoration:underline}
+.sc{overflow-x:auto}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;color:#87938c;font-weight:700;padding:10px 12px;background:#fafcfb;border-bottom:1px solid var(--ln);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #eef2ef;font-size:13px;vertical-align:top}td input:not([type=checkbox]),td textarea,td select{width:100%;min-width:90px}td .nm{min-width:70px;max-width:110px}td textarea{min-height:58px;min-width:280px}td input[data-f=name]{min-width:190px}
+.tools{display:flex;gap:8px;padding:12px 16px;flex-wrap:wrap;align-items:center}.bar{display:flex;gap:8px;align-items:center;padding:12px 16px;flex-wrap:wrap}.sp{flex:1}
+.pl{display:inline-block;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;white-space:nowrap;margin-right:5px}.gn{background:var(--gs);color:var(--gd)}.rd{background:var(--rs);color:var(--rd)}.am{background:var(--as);color:var(--am)}.gy{background:#f0f3f1;color:#66736b}
+.note{background:var(--as);color:var(--am);border-radius:9px;padding:9px 13px;margin-bottom:14px;font-size:12px}.em{padding:30px;text-align:center;color:var(--mu)}.mu,small{color:var(--mu);font-size:11px}
+.two{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:14px;align-items:start}.tr{padding:14px;max-height:680px;overflow:auto;background:#fbfdfc}#au{padding:10px 14px 0}#au audio{width:100%}
+.m{border:1px solid var(--ln);background:#fff;border-radius:11px;padding:9px 12px;margin-bottom:9px;max-width:90%;font-size:13px;transition:.2s;white-space:pre-wrap;word-break:break-word}.m.operator{margin-left:auto;background:#eff9f4;border-color:#d7eee2}.m.bot,.m.system{background:#f4f5f4;font-style:italic}
+.m.hl{outline:3px solid #f4c45e;background:#fff9e8}.mm{display:flex;justify-content:space-between;gap:12px;font-size:10px;color:#8a968f;margin-bottom:3px;font-style:normal}
+.sum{display:flex;justify-content:space-between;gap:12px;padding:16px;flex-wrap:wrap}.big{font-size:34px;font-weight:800;color:var(--gd);letter-spacing:-1px}
+.cr{padding:12px 16px;border-bottom:1px solid #eef2ef}.cr:last-child{border:0}.ct{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.ex{margin:5px 0;font-size:12px;color:#4d5b53}
+.ap{background:#f8fbf9;border:1px solid var(--ln);border-radius:10px;padding:10px;margin-top:8px;font-size:12px}.fm{display:grid;gap:6px;margin-top:8px}.fm textarea{width:100%;min-height:54px}
+.hid{display:none!important}.toast{position:fixed;right:20px;bottom:20px;max-width:min(520px,calc(100vw - 40px));background:#173c2b;color:#fff;padding:11px 15px;border-radius:10px;font-size:12px;opacity:0;transition:.2s;pointer-events:none;z-index:40}.toast.show{opacity:1}
+.chkl{display:inline-flex;gap:6px;align-items:center;font-size:12px;color:#405047;padding:6px 10px;border:1px solid var(--ln);border-radius:8px;background:#fff;cursor:pointer;user-select:none}.chkl input{margin:0}
+.ovl{position:fixed;inset:0;background:rgba(15,30,22,.35);display:grid;place-items:center;z-index:30;padding:16px}
+.dlg{background:#fff;border-radius:14px;max-width:680px;width:100%;padding:18px;display:grid;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.18)}
+.dlg h2{margin:0;font-size:18px}.dlg textarea{min-height:200px;width:100%;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.crit{background:var(--rs);border:1px solid #f3c9c6;color:#6f2121;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:13px}.crit b{color:var(--rd)}
+.meta{padding:12px 16px;font-size:12px;color:#4d5b53;display:grid;gap:8px}.kv{display:flex;flex-wrap:wrap;gap:4px 16px}.kv span b{color:var(--ink)}
+details summary{cursor:pointer;font-weight:700;color:var(--gd)}
+pre.facts{background:#f6f9f7;border:1px solid var(--ln);border-radius:8px;padding:10px;max-height:340px;overflow:auto;font-size:11px;white-space:pre-wrap;word-break:break-word;margin:8px 0 0}
+.prog{height:6px;background:#eef2ef;border-radius:4px;overflow:hidden;flex:1;min-width:120px}.prog>i{display:block;height:100%;background:var(--g);width:0;transition:width .3s}
+.diff{padding:12px 16px;border-top:1px solid var(--ln);font-size:13px;display:grid;gap:8px}.diff table td,.diff table th{padding:6px 8px}
+.up{color:var(--gd);font-weight:700}.down{color:var(--rd);font-weight:700}
+.ev{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:center}
+.chip{border:1px solid var(--ln);background:#fff;border-radius:6px;padding:1px 7px;font-size:11px;color:var(--gd);font-weight:700}.chip:hover{border-color:var(--g)}
+textarea.rules{width:100%;min-height:110px;margin-top:8px}
+.est{font-size:11px;color:var(--am)}
+@media(max-width:900px){.two{grid-template-columns:1fr}.top{padding:10px 14px}main{padding:16px 14px}}
+@media(max-width:640px){.brand{margin-right:auto}nav{order:3;flex-basis:100%}#lg{max-width:150px}h1{font-size:20px}.big{font-size:28px}.m{max-width:100%}.tools input{flex:1 1 140px}}
+.two>*{min-width:0}.mm{flex-wrap:wrap}.mm span{overflow-wrap:anywhere}
+</style></head><body>
+<div id="cqa">
+<header class="top"><div class="brand"><span class="mark">F</span>Freedom Broker · CQA</div>
+<nav><button class="nb" data-p="checklist" data-i="Checklist">Checklist</button><button class="nb on" data-p="list" data-i="Conversations">Conversations</button><button class="nb" data-p="appeals" data-i="Appeals">Appeals</button></nav>
+<select id="lg" aria-label="Language"><option value="ru" selected>RU · Русский</option><option value="kz">KZ · Қазақша</option><option value="en">EN · English</option></select>
+<div class="seg"><button class="on" data-ro="reviewer" data-i="Reviewer">Reviewer</button><button data-ro="operator" data-i="Operator">Operator</button></div></header>
+<main>
+<div id="demo" class="note hid"></div>
+
+<section id="p-checklist" class="hid"><div class="hd"><div><h1 data-i="Checklist">Checklist</h1><div id="clv" class="mu" style="margin-top:4px"></div></div></div>
+<div class="card"><div class="sc"><table><thead><tr><th>ID</th><th data-i="Name">Name</th><th data-i="Rule">Rule</th><th data-i="Weight">Weight</th><th data-i="Type">Type</th><th data-i="Scale values">Scale values</th><th data-i="N/A allowed">N/A allowed</th><th data-i="Section">Section</th><th></th></tr></thead><tbody id="clr"></tbody></table></div>
+<div class="bar"><button class="btn" id="add" data-i="Add criterion">Add criterion</button><span id="wsum" class="mu"></span><span id="dirty" class="pl am hid" data-i="Unsaved changes">Unsaved changes</span><span class="sp"></span><button class="btn" id="rst" data-i="Discard changes">Discard changes</button><button class="btn pr" id="sv" data-i="Save checklist">Save checklist</button><button class="btn" id="rev" data-i="Re-evaluate conversations">Re-evaluate conversations</button></div>
+<div class="diff"><details><summary data-i="General rules for the AI">General rules for the AI</summary><textarea id="rules" class="rules" aria-label="rules"></textarea><small data-i="Changing the general rules sends every criterion to the AI again on re-evaluation.">Changing the general rules sends every criterion to the AI again on re-evaluation.</small></details></div>
+<div id="cldiff" class="diff hid"></div>
+<div id="impact" class="diff hid"></div>
+</div></section>
+
+<section id="p-list"><div class="hd"><h1 data-i="Conversations">Conversations</h1><div class="acts"><button class="btn" id="ex" data-i="Export CSV">Export CSV</button><button class="btn" id="dev" data-i="Load DEV set">Load DEV set</button><button class="btn" id="pst" data-i="Paste text">Paste text</button><button class="btn" id="up" data-i="Upload JSON">Upload JSON</button><button class="btn pr" id="evall" data-i="Evaluate unevaluated">Evaluate unevaluated</button></div></div>
+<div id="jobbar" class="card bar hid"><span id="jobtx"></span><div class="prog"><i id="jobpg"></i></div></div>
+<div class="card"><div class="tools"><input id="q" data-ph="Search ID" placeholder="Search ID">
+<select id="fl" aria-label="Language"><option value="" data-i="All languages">All languages</option><option>RU</option><option>KZ</option><option>EN</option></select>
+<select id="fc" aria-label="Channel"><option value="" data-i="All channels">All channels</option><option value="agent chat" data-i="agent chat">agent chat</option><option value="voice call" data-i="voice call">voice call</option></select>
+<label class="chkl"><input type="checkbox" id="fcrit"><span data-i="Gross errors only">Gross errors only</span></label>
+<label class="chkl"><input type="checkbox" id="fnr"><span data-i="Needs review">Needs review</span></label>
+<label class="chkl"><input type="checkbox" id="fap"><span data-i="Open appeals">Open appeals</span></label>
+<span class="sp"></span><span id="cnt" class="mu"></span></div>
+<div class="sc"><table><thead><tr><th>ID</th><th data-i="Language">Language</th><th data-i="Channel">Channel</th><th data-i="Score">Score</th><th data-i="Gross error">Gross error</th><th data-i="Status">Status</th><th data-i="Model">Model</th><th></th></tr></thead><tbody id="lr"></tbody></table></div></div></section>
+
+<section id="p-card" class="hid"><div class="hd"><div><button class="btn s" id="bk" data-i="Back">Back</button><h1 id="ct" style="margin-top:10px"></h1><div id="cm" style="margin-top:6px"></div></div><div class="acts"><button class="btn pr" id="cev">Evaluate</button></div></div>
+<div id="cban"></div>
+<div class="two"><div class="card"><div class="ch" data-i="Transcript">Transcript</div><div id="au"></div><div id="tr" class="tr"></div></div>
+<div><div class="card sum" id="sm"></div><div class="card" id="meta"></div><div class="card" id="cr"></div></div></div></section>
+
+<section id="p-appeals" class="hid"><div class="hd"><h1 data-i="Appeals">Appeals</h1><div class="acts"><select id="apst" aria-label="Status"><option value="" data-i="All statuses">All statuses</option><option value="open" data-i="Pending">Pending</option><option value="decided" data-i="Resolved">Resolved</option></select></div></div>
+<div class="card sc"><table><thead><tr><th>#</th><th data-i="Conversation">Conversation</th><th data-i="Criterion">Criterion</th><th data-i="Comment">Comment</th><th data-i="Status">Status</th><th data-i="Decision">Decision</th><th data-i="Created">Created</th></tr></thead><tbody id="apr"></tbody></table></div></section>
+</main>
+
+<div id="ovl" class="ovl hid" role="dialog" aria-modal="true" aria-labelledby="ovh"><div class="dlg"><h2 id="ovh" data-i="Paste a transcript">Paste a transcript</h2>
+<small data-i="One line per message: mm:ss role: text. Roles: client, operator, bot, system (or клиент, оператор, бот, система).">One line per message: mm:ss role: text. Roles: client, operator, bot, system (or клиент, оператор, бот, система).</small>
+<textarea id="ptx" aria-label="transcript" placeholder="00:00 клиент: Где посмотреть мой тариф?&#10;00:45 оператор: Добрый день! Меня зовут Алия. Тариф виден в разделе «Профиль → Тариф».&#10;01:10 клиент: Нашёл, спасибо.&#10;01:20 оператор: Рада помочь! Если появятся вопросы, пишите. До свидания!"></textarea>
+<div class="row"><select id="pch" aria-label="Channel"><option value="agent chat" data-i="agent chat">agent chat</option><option value="voice call" data-i="voice call">voice call</option></select><select id="plg" aria-label="Language"><option value="" data-i="Language: auto">Language: auto</option><option>RU</option><option>KZ</option><option>EN</option></select><input id="pid" data-ph="Conversation ID (optional)" placeholder="Conversation ID (optional)"></div>
+<div class="row"><span class="sp"></span><button class="btn" id="pcan" data-i="Cancel">Cancel</button><button class="btn pr" id="pok" data-i="Import">Import</button></div></div></div>
+<div id="toast" class="toast" role="status"></div><input id="fi" type="file" accept=".json,application/json" hidden>
+</div>
+<script>
+(()=>{
+"use strict";
+/* Контракт бэкенда: docs/api.md. Все баллы, итоги и флаги берутся с сервера; страница их не пересчитывает
+   (кроме предпросмотра решения по апелляции, он подписан как оценка). */
+const API=typeof window.CQA_API==="string"?window.CQA_API.replace(/\/+$/,""):(/^https?:$/.test(location.protocol)?"":null);
+const ONLINE=API!==null;
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const enc=encodeURIComponent,clone=o=>JSON.parse(JSON.stringify(o));
+const fmtN=v=>{const n=Number(v);return Number.isFinite(n)?(Number.isInteger(n)?String(n):String(Math.round(n*100)/100)):String(v)};
+const fmtT=v=>v==null?"—":Number(v).toFixed(2);
+const r2=x=>Math.round(Number(x.toFixed(9))*100)/100;   /* половина вверх без шума float: 25.625 -> 25.63 */
+
+/* ---------- i18n: [EN, RU, KZ] ---------- */
+const D=[["Checklist","Чек-лист","Тексеру парағы"],["Conversations","Диалоги","Диалогтар"],["Appeals","Апелляции","Апелляциялар"],["Reviewer","Проверяющий","Тексеруші"],["Operator","Оператор","Оператор"],
+["Name","Название","Атауы"],["Rule","Инструкция для ИИ","ЖИ-ге нұсқаулық"],["Weight","Вес","Салмақ"],["Type","Тип ответа","Жауап түрі"],["Scale values","Шкала","Шкала"],["N/A allowed","N/A разрешён","N/A рұқсат"],["Section","Секция","Бөлім"],
+["Add criterion","Добавить критерий","Критерий қосу"],["Save checklist","Сохранить чек-лист","Тексеру парағын сақтау"],["Checklist saved","Чек-лист сохранён","Тексеру парағы сақталды"],["Delete","Удалить","Жою"],
+["Unsaved changes","Есть несохранённые изменения","Сақталмаған өзгерістер бар"],["Discard changes","Отменить изменения","Өзгерістерден бас тарту"],["Re-evaluate conversations","Переоценить диалоги","Диалогтарды қайта бағалау"],
+["General rules for the AI","Общие правила для ИИ","ЖИ-ге арналған жалпы ережелер"],["Changing the general rules sends every criterion to the AI again on re-evaluation.","Если изменить общие правила, при переоценке ИИ заново оценит все критерии.","Жалпы ережелер өзгерсе, қайта бағалауда ЖИ барлық критерийді қайта бағалайды."],
+["Version","Версия","Нұсқа"],["Weights must sum to 100","Сумма весов должна быть 100","Салмақтар қосындысы 100 болуы керек"],["Fill in the name of every criterion","Заполните название каждого критерия","Әр критерийдің атауын толтырыңыз"],
+["A scale needs at least two values","Для шкалы нужно минимум два значения","Шкалаға кемінде екі мән керек"],["Checklist not loaded","Чек-лист не загружен","Тексеру парағы жүктелмеді"],
+["Changes vs version","Изменения относительно версии","Нұсқамен салыстырғандағы өзгерістер"],["Added","Добавлены","Қосылды"],["Removed","Удалены","Жойылды"],
+["Changed: the AI will be asked again","Изменены: ИИ оценит заново","Өзгертілді: ЖИ қайта бағалайды"],["Weight only: recalculated without the AI","Только вес: пересчёт без ИИ","Тек салмақ: ЖИ-сіз қайта есептеледі"],
+["General rules changed","Изменены общие правила","Жалпы ережелер өзгерді"],["none","нет","жоқ"],["yes","да","иә"],
+["Impact of the change","Влияние изменения","Өзгерістің әсері"],["Old total","Было","Бұрын"],["New total","Стало","Қазір"],["Changed answers","Изменённые ответы","Өзгерген жауаптар"],
+["Sent to the AI","Отправлено ИИ","ЖИ-ге жіберілді"],["recalculated only","только пересчёт","тек қайта есептеу"],["Re-evaluation","Переоценка","Қайта бағалау"],
+["Load DEV set","Загрузить набор DEV","DEV жинағын жүктеу"],["Paste text","Вставить текст","Мәтінді қою"],["Upload JSON","Загрузить JSON","JSON жүктеу"],["Evaluate unevaluated","Оценить неоценённые","Бағаланбағандарды бағалау"],
+["Search ID","Поиск по ID","ID бойынша іздеу"],["All languages","Все языки","Барлық тілдер"],["All channels","Все каналы","Барлық арналар"],
+["Gross errors only","Только грубые ошибки","Тек өрескел қателер"],["Needs review","Нужна проверка","Тексеру қажет"],["Open appeals","Открытые апелляции","Ашық апелляциялар"],
+["agent chat","Чат с оператором","Оператор чаты"],["voice call","Звонок","Қоңырау"],["Language","Язык","Тіл"],["Channel","Канал","Арна"],["Score","Балл","Балл"],["Gross error","Грубая ошибка","Өрескел қате"],["Status","Статус","Мәртебе"],["Model","Модель","Модель"],
+["Back","Назад","Артқа"],["Transcript","Транскрипт","Транскрипт"],["Criterion","Критерий","Критерий"],["Comment","Комментарий","Пікір"],["Conversation","Диалог","Диалог"],["Created","Создано","Құрылды"],
+["Yes/No","Да/Нет","Иә/Жоқ"],["Scale","Шкала","Шкала"],["Flag","Флаг","Белгі"],["Yes","Да","Иә"],["No","Нет","Жоқ"],["Not evaluated","Не оценено","Бағаланбаған"],["No violation","Нарушений нет","Бұзушылық жоқ"],
+["Evaluate","Оценить","Бағалау"],["Re-evaluate","Оценить заново","Қайта бағалау"],["Open card","Открыть","Ашу"],["Total score","Итоговый балл","Қорытынды балл"],["Points","Баллы","Ұпай"],
+["Checked range","Проверенный участок","Тексерілген бөлік"],["messages","сообщения","хабарламалар"],["Evidence","Доказательства","Дәлелдер"],
+["Dispute","Оспорить","Дауласу"],["Appeal","Апелляция","Апелляция"],["Send appeal","Отправить апелляцию","Апелляцияны жіберу"],["Your comment","Ваш комментарий","Сіздің пікіріңіз"],["Pending","На рассмотрении","Қарауда"],["Resolved","Решено","Шешілді"],["All statuses","Все статусы","Барлық мәртебелер"],
+["Decision","Решение","Шешім"],["Confirm","Подтвердить","Растау"],["Change","Изменить","Өзгерту"],["Confirmed","Подтверждено","Расталды"],["Changed","Изменено","Өзгертілді"],["Reason","Причина","Себебі"],["Save decision","Сохранить решение","Шешімді сақтау"],["Fill in the text","Заполните текст","Мәтін енгізіңіз"],
+["Appeal sent","Апелляция отправлена","Апелляция жіберілді"],["Decision saved","Решение сохранено","Шешім сақталды"],["Evaluated","Оценён","Бағаланды"],["Request failed","Запрос не выполнен","Сұрау орындалмады"],["Invalid file","Неверный файл","Жарамсыз файл"],["No appeals","Апелляций нет","Апелляциялар жоқ"],
+["Export CSV","Экспорт CSV","CSV экспорт"],["client","Клиент","Клиент"],["operator","Оператор","Оператор"],["bot","Бот","Бот"],["system","Система","Жүйе"],
+["Preview (estimate on the page, not saved)","Предпросмотр (расчёт на странице, не сохранён)","Алдын ала қарау (беттегі есеп, сақталмаған)"],
+["from previous evaluation","из прошлой оценки","алдыңғы бағалаудан"],["Original","Исходно","Бастапқы"],["changed on appeal","изменено по апелляции","апелляция бойынша өзгертілді"],
+["Confidence","Уверенность","Сенімділік"],["Effective weight","Вес после перераспределения","Қайта бөлінген салмақ"],["of","из","/"],
+["Gross error found","Обнаружена грубая ошибка","Өрескел қате анықталды"],["not counted in the score","в балл не входит","баллға кірмейді"],
+["LLM calls","Вызовов ИИ","ЖИ шақырулары"],["Tokens","Токены","Токендер"],["Cost","Стоимость","Құны"],["Checklist version","Версия чек-листа","Тексеру парағының нұсқасы"],["Evaluation","Оценка","Бағалау"],
+["Asked the AI","Спрошено у ИИ","ЖИ-ден сұралды"],["What the AI saw","Что видел ИИ","ЖИ не көрді"],["Facts computed by code before the AI (timings, events, language):","Факты, посчитанные кодом до ИИ (время, события, язык):","ЖИ-ге дейін код есептеген деректер (уақыт, оқиғалар, тіл):"],
+["Appeal history","История апелляций","Апелляциялар тарихы"],["Evaluating…","Идёт оценка…","Бағалануда…"],["Evaluation done","Оценка готова","Бағалау дайын"],["done","готово","дайын"],["errors","ошибок","қате"],
+["All conversations are evaluated","Все диалоги уже оценены","Барлық диалогтар бағаланған"],["Imported","Загружено","Жүктелді"],["conversations","диалогов","диалог"],
+["No conversations. Load the DEV set, paste a transcript or upload a JSON file.","Диалогов нет. Загрузите набор DEV, вставьте текст или загрузите JSON-файл.","Диалогтар жоқ. DEV жинағын жүктеңіз, мәтінді қойыңыз немесе JSON файлын жүктеңіз."],
+["Offline: no backend. Open this page from the backend (http://localhost:8000/ui/) or set window.CQA_API.","Нет связи с бэкендом. Откройте страницу с бэкенда (http://localhost:8000/ui/) или задайте window.CQA_API.","Бэкендпен байланыс жоқ. Бетті бэкендтен ашыңыз (http://localhost:8000/ui/) немесе window.CQA_API орнатыңыз."],
+["Backend is not reachable","Бэкенд недоступен","Бэкенд қолжетімсіз"],["Paste a transcript","Вставить транскрипт","Транскриптті қою"],
+["One line per message: mm:ss role: text. Roles: client, operator, bot, system (or клиент, оператор, бот, система).","По строке на реплику: мм:сс роль: текст. Роли: клиент, оператор, бот, система (или client, operator, bot, system).","Әр хабарлама жеке жолда: мм:сс рөл: мәтін. Рөлдер: клиент, оператор, бот, система (немесе client, operator, bot, system)."],
+["Language: auto","Язык: авто","Тіл: авто"],["Conversation ID (optional)","ID диалога (необязательно)","Диалог ID (міндетті емес)"],["Cancel","Отмена","Болдырмау"],["Import","Загрузить","Жүктеу"],
+["shown","показано","көрсетілді"],["for evaluation","к оценке","бағалауға"],["was","было","бұрын"],["total","итог","қорытынды"],["Open","Открыть","Ашу"]];
+const M={ru:{},kz:{}};D.forEach(([e,r,k])=>{M.ru[e]=r;M.kz[e]=k});
+let lang="ru",role="reviewer",page="list",tm;
+const t=s=>(M[lang]&&M[lang][s])||s;
+
+/* ---------- state ---------- */
+let cl=null,draft=null,convs=[],cur=null,lastErr="",lastDiff=null,lastImpact=null;
+const clCache={};
+
+function toast(s,ms){const e=$("#toast");e.textContent=s;e.classList.add("show");clearTimeout(tm);tm=setTimeout(()=>e.classList.remove("show"),ms||2600)}
+function errText(d,status){let det=d&&typeof d==="object"&&"detail" in d?d.detail:d;
+ if(Array.isArray(det))det=det.map(x=>typeof x==="string"?x:(x&&x.msg?((x.loc||[]).filter(p=>p!=="body").join(".")+": "+x.msg):JSON.stringify(x))).join("; ");
+ else if(det&&typeof det==="object")det=JSON.stringify(det);
+ return "HTTP "+status+(det?": "+String(det).slice(0,400):"")}
+async function api(method,path,body){if(!ONLINE)return null;lastErr="";
+ try{const o={method,headers:{}};if(body!==undefined){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(body)}
+  const r=await fetch(API+path,o),txt=await r.text();let d=null;try{d=txt?JSON.parse(txt):{}}catch(_){d=txt}
+  if(!r.ok){lastErr=errText(d,r.status);console.error("CQA API",method,path,lastErr);return null}return d}
+ catch(e){lastErr=String(e&&e.message||e);console.error("CQA API",method,path,lastErr);return null}}
+const fail=()=>toast(t("Request failed")+(lastErr?": "+lastErr:""),7000);
+
+/* ---------- checklist adapter: правим копию, все поля, которых нет в редакторе, сохраняются как есть ---------- */
+const toUI=c=>clone(c);
+function fromUI(d){const out=clone(d);out.rules=out.rules||"";
+ out.criteria=out.criteria.map(c=>{c.weight=Number(c.weight)||0;c.section=c.section||null;if(!c.code)c.code=c.id;
+  if(c.type==="scale"){c.scale=(c.scale||[]).map(Number);if(c.scale_descriptions){const keep={};Object.entries(c.scale_descriptions).forEach(([k,v])=>{if(c.scale.some(s=>s===Number(k)))keep[k]=v});c.scale_descriptions=Object.keys(keep).length?keep:null}}
+  else{c.scale=null;c.scale_descriptions=null}
+  if(c.type==="flag"){c.weight=0;c.na_allowed=false}
+  return c});return out}
+async function getCL(id,ver){const k=id+":"+ver;if(clCache[k])return clCache[k];const c=await api("GET","/checklists/"+enc(id)+(ver!=null?"?version="+enc(ver):""));if(c&&c.criteria){clCache[c.checklist_id+":"+c.version]=c;return c}return null}
+async function loadCL(){const m=await api("GET","/checklists");if(!Array.isArray(m)||!m.length)return false;
+ const id=(m.find(x=>x.checklist_id==="chat-quality")||m[0]).checklist_id;const c=await getCL(id,null);if(!c)return false;cl=c;draft=toUI(c);return true}
+const CLID=()=>(cl&&cl.checklist_id)||"chat-quality";
+const dirty=()=>!!(cl&&draft)&&JSON.stringify(fromUI(draft))!==JSON.stringify(fromUI(toUI(cl)));
+const wsum=d=>d.criteria.reduce((a,k)=>a+(k.type==="flag"?0:Number(k.weight)||0),0);
+
+function editor(){if(!draft){$("#clr").innerHTML=`<tr><td colspan="9" class="em">${t("Checklist not loaded")}</td></tr>`;$("#clv").textContent="";$("#wsum").textContent="";return}
+ $("#clv").textContent=(draft.name||draft.checklist_id)+" · "+t("Version")+" "+(cl?cl.version:"—");
+ const secs=draft.sections||[];
+ $("#clr").innerHTML=draft.criteria.map((k,i)=>`<tr data-k="${i}"><td><b>${esc(k.id)}</b><br><small>${esc(k.code||"")}</small></td>
+<td><input data-f="name" value="${esc(k.name)}"></td><td><textarea data-f="instruction" rows="4">${esc(k.instruction||"")}</textarea></td>
+<td><input class="nm" data-f="weight" type="number" min="0" step="any" value="${esc(k.weight)}"${k.type==="flag"?" disabled":""}></td>
+<td><select data-f="type">${[["yes_no","Yes/No"],["scale","Scale"],["flag","Flag"]].map(([v,l])=>`<option value="${v}"${k.type===v?" selected":""}>${t(l)}</option>`).join("")}</select></td>
+<td><input class="nm" data-f="scale" value="${esc((k.scale||[]).join(","))}"${k.type==="scale"?"":" disabled"}></td>
+<td><input data-f="na_allowed" type="checkbox"${k.na_allowed?" checked":""}${k.type==="flag"?" disabled":""}></td>
+<td><select data-f="section"><option value="">—</option>${secs.map(s=>`<option value="${esc(s.id)}"${k.section===s.id?" selected":""}>${esc(s.name||s.id)}</option>`).join("")}</select></td>
+<td><button class="btn s" data-x="${i}">${t("Delete")}</button></td></tr>`).join("");
+ $("#rules").value=draft.rules||"";ws()}
+function ws(){if(!draft)return;const w=wsum(draft),ok=Math.abs(w-100)<1e-9;$("#wsum").textContent="Σ "+t("Weight")+": "+fmtN(w)+(ok?"":" ≠ 100");$("#wsum").style.color=ok?"":"var(--rd)";$("#dirty").classList.toggle("hid",!dirty())}
+function diffBox(){const b=$("#cldiff");if(!lastDiff){b.classList.add("hid");return}const d=lastDiff.d,L=a=>a&&a.length?a.map(esc).join(", "):t("none");
+ b.classList.remove("hid");b.innerHTML=`<b>${t("Changes vs version")} ${esc(lastDiff.from)} → ${esc(lastDiff.to)}</b>
+<div>${t("Added")}: ${L(d.added)}</div><div>${t("Removed")}: ${L(d.removed)}</div><div>${t("Changed: the AI will be asked again")}: ${L(d.changed)}</div><div>${t("Weight only: recalculated without the AI")}: ${L(d.weight_only)}</div><div>${t("General rules changed")}: ${d.rules_changed?t("yes"):t("none")}</div>`}
+function impactBox(){const b=$("#impact"),j=lastImpact;if(!j){b.classList.add("hid");return}b.classList.remove("hid");
+ const pct=j.total?Math.round(100*(j.done||0)/j.total):0,ds=Array.isArray(j.diffs)?j.diffs:[];
+ const rowsH=ds.map(x=>{const dlt=x.old_total!=null&&x.new_total!=null?r2(x.new_total-x.old_total):null;
+  const ch=(x.changed_answers||[]).map(a=>`${esc(a.criterion_id)}: ${esc(fmtA(a.old))} → ${esc(fmtA(a.new))}`).join("<br>")||"—";
+  const asked=x.asked_criteria&&x.asked_criteria.length?x.asked_criteria.map(esc).join(", "):`<span class="mu">${t("recalculated only")}</span>`;
+  return `<tr><td><button class="lk" data-o="${esc(x.conversation_id)}">${esc(x.conversation_id)}</button></td><td>${fmtT(x.old_total)}${x.old_critical?` <span class="pl rd">!</span>`:""}</td><td>${fmtT(x.new_total)}${x.new_critical?` <span class="pl rd">!</span>`:""}${dlt?` <span class="${dlt>0?"up":"down"}">${dlt>0?"+":""}${fmtN(dlt)}</span>`:""}</td><td>${ch}</td><td>${asked}</td></tr>`}).join("");
+ b.innerHTML=`<div class="row"><b>${t("Impact of the change")}</b><span class="mu">${esc(j.done||0)} / ${esc(j.total||0)} ${t("done")}${(j.failed||[]).length?" · "+j.failed.length+" "+t("errors"):""}</span><div class="prog"><i style="width:${pct}%"></i></div></div>
+${ds.length?`<div class="sc"><table><thead><tr><th>${t("Conversation")}</th><th>${t("Old total")}</th><th>${t("New total")}</th><th>${t("Changed answers")}</th><th>${t("Sent to the AI")}</th></tr></thead><tbody>${rowsH}</tbody></table></div>`:""}
+${(j.failed||[]).length?`<small>${j.failed.map(f=>esc((f.id||f.conversation_id||"")+": "+(f.error||"")).slice(0,200)).join("<br>")}</small>`:""}`}
+const fmtA=v=>v==="yes"?t("Yes"):v==="no"?t("No"):v==="na"?"N/A":v==null?"—":fmtN(v);
+
+async function saveCL(){if(!draft)return;const d=fromUI(draft);
+ if(d.criteria.some(k=>!String(k.name||"").trim())){toast(t("Fill in the name of every criterion"));return}
+ if(d.criteria.some(k=>k.type==="scale"&&(new Set(k.scale)).size<2)){toast(t("A scale needs at least two values"));return}
+ if(Math.abs(wsum(d)-100)>1e-9){toast(t("Weights must sum to 100"));return}
+ if(!ONLINE){fail();return}
+ const oldV=cl&&cl.version,r=await api("POST","/checklists",d);if(!r){fail();return}
+ toast(t("Checklist saved")+" · "+t("Version")+" "+r.version);await loadCL();
+ lastDiff=null;if(oldV&&r.version&&r.version!==oldV){const df=await api("GET",`/checklists/${enc(r.checklist_id||CLID())}/diff?from_version=${enc(oldV)}&to_version=${enc(r.version)}`);if(df)lastDiff={from:oldV,to:r.version,d:df}}
+ render()}
+async function reeval(){if(!ONLINE){fail();return}if(dirty()){toast(t("Unsaved changes"));return}
+ const r=await api("POST","/reevaluate",{checklist_id:CLID(),version:null,conversation_ids:null});if(!r){fail();return}
+ lastImpact={status:"running",total:r.total,done:0,failed:[],diffs:[]};impactBox();$("#rev").disabled=true;
+ pollJob(r.job_id,j=>{lastImpact=j;if(page==="checklist")impactBox()},()=>{$("#rev").disabled=false;toast(t("Re-evaluation")+": "+t("done"));loadList(true)})}
+function pollJob(id,onTick,onDone){const tick=async()=>{const j=await api("GET","/jobs/"+enc(id));if(!j){fail();onDone&&onDone(null);return}onTick(j);
+ if(["finished","done","completed","failed","error"].includes(j.status))onDone&&onDone(j);else setTimeout(tick,2000)};tick()}
+
+/* ---------- conversations ---------- */
+function listQuery(){const p=new URLSearchParams();if($("#fcrit").checked)p.set("critical","true");if($("#fnr").checked)p.set("needs_review","true");if($("#fap").checked)p.set("has_open_appeal","true");
+ if($("#fl").value)p.set("language",$("#fl").value);if($("#fc").value)p.set("channel",$("#fc").value);const q=$("#q").value.trim();if(q)p.set("q",q);const s=p.toString();return s?"?"+s:""}
+async function loadList(quiet){if(!ONLINE){convs=[];rows();return}const d=await api("GET","/conversations"+listQuery());if(d===null){if(!quiet)fail();return}convs=Array.isArray(d)?d:[];rows()}
+function shown(){const q=$("#q").value.trim().toLowerCase(),lg=$("#fl").value,ch=$("#fc").value,fc=$("#fcrit").checked,fn=$("#fnr").checked,fa=$("#fap").checked;
+ /* те же фильтры на странице - на случай, если сервер какой-то не поддерживает */
+ return convs.filter(c=>(!q||String(c.conversation_id).toLowerCase().includes(q))&&(!lg||c.language===lg)&&(!ch||c.channel===ch)&&(!fc||c.critical_error)&&(!fn||c.needs_review)&&(!fa||(c.open_appeals||0)>0))
+  .sort((a,b)=>(b.critical_error?1:0)-(a.critical_error?1:0)||((a.total==null)-(b.total==null))||((a.total==null?0:a.total)-(b.total==null?0:b.total))||String(a.conversation_id).localeCompare(String(b.conversation_id)))}
+function status(c){if(c.total==null&&!c.evaluation_id)return `<span class="pl gy">${t("Not evaluated")}</span>`;let h="";
+ if((c.open_appeals||0)>0)h+=`<span class="pl am">${t("Appeal")}: ${esc(c.open_appeals)}</span>`;if(c.needs_review)h+=`<span class="pl am">${t("Needs review")}</span>`;
+ return h||`<span class="pl gy">${t("Evaluated")}</span>`}
+function rows(){const L=shown();$("#cnt").textContent=convs.length?t("shown")+": "+L.length+" / "+convs.length:"";
+ $("#lr").innerHTML=L.map(c=>`<tr><td><button class="lk" data-o="${esc(c.conversation_id)}">${esc(c.conversation_id)}</button></td><td>${esc(c.language||"")}</td><td>${esc(t(c.channel||""))}</td>
+<td><b>${fmtT(c.total)}</b></td><td>${c.critical_error?`<span class="pl rd">${t("Gross error")}</span>`:"—"}</td><td>${status(c)}</td><td><small>${esc(c.model||"")}</small></td>
+<td style="white-space:nowrap"><button class="btn s" data-o="${esc(c.conversation_id)}">${t("Open card")}</button> <button class="btn s" data-e="${esc(c.conversation_id)}">${t(c.total==null?"Evaluate":"Re-evaluate")}</button></td></tr>`).join("")
+  ||`<tr><td colspan="8" class="em">${ONLINE?t("No conversations. Load the DEV set, paste a transcript or upload a JSON file."):t("Offline: no backend. Open this page from the backend (http://localhost:8000/ui/) or set window.CQA_API.")}</td></tr>`}
+async function evaluateOne(id,btn){if(!ONLINE){fail();return}if(btn)btn.disabled=true;toast(t("Evaluating…")+" "+id,60000);
+ const r=await api("POST",`/evaluate/${enc(id)}?checklist_id=${enc(CLID())}`);if(btn)btn.disabled=false;
+ if(!r){fail();return}toast(t("Evaluation done")+": "+id+" · "+fmtT(r.total));await loadList(true);if(page==="card"&&cur&&cur.conv.conversation_id===id)await openCard(id,true)}
+async function evaluateMissing(){if(!ONLINE){fail();return}const ids=convs.filter(c=>c.total==null&&!c.evaluation_id).map(c=>c.conversation_id);if(!ids.length){toast(t("All conversations are evaluated"));return}
+ const r=await api("POST","/evaluate-batch",{conversation_ids:ids,checklist_id:CLID()});if(!r){fail();return}
+ const bar=$("#jobbar");bar.classList.remove("hid");$("#evall").disabled=true;
+ pollJob(r.job_id,j=>{const tot=j.total||ids.length,dn=j.done||0;$("#jobtx").textContent=t("Evaluating…")+" "+dn+" / "+tot+((j.failed||[]).length?" · "+j.failed.length+" "+t("errors"):"");$("#jobpg").style.width=(tot?100*dn/tot:0)+"%";if(dn)loadList(true)},
+  j=>{$("#evall").disabled=false;setTimeout(()=>bar.classList.add("hid"),4000);loadList(true);if(j&&(j.failed||[]).length)toast(j.failed.length+" "+t("errors")+": "+String(j.failed[0].error||"").slice(0,200),8000)})}
+
+/* ---------- card ---------- */
+function normDetail(d){const c=d.conversation||{};let msgs=c.messages;
+ if(!Array.isArray(msgs))msgs=(c.transcript||[]).map((m,i)=>({idx:i,ts:m.timestamp,t:null,speaker:m.speaker,text:m.text}));
+ return{conv:Object.assign({},c,{has_audio:c.has_audio!==undefined?!!c.has_audio:!!c.audio_url,messages:msgs}),ev:d.evaluation||null,appeals:Array.isArray(d.appeals)?d.appeals:[],cl:null}}
+async function openCard(id,stay){const d=await api("GET","/conversations/"+enc(id));if(!d){fail();return}cur=normDetail(d);
+ if(cur.ev&&cur.ev.checklist_id)cur.cl=await getCL(cur.ev.checklist_id,cur.ev.checklist_version);if(!cur.cl)cur.cl=cl;
+ if(stay&&page==="card")card();else go("card")}
+const def=id=>(cur&&cur.cl&&cur.cl.criteria.find(c=>c.id===id))||(cl&&cl.criteria.find(c=>c.id===id))||null;
+const typeOf=(k,v)=>k?k.type:(typeof v==="number"?"scale":"yes_no");
+const maxOf=k=>k&&k.scale&&k.scale.length?Math.max.apply(null,k.scale):null;
+function lab(k,v){if(v===undefined||v===null)return t("Not evaluated");if(v==="na")return "N/A";const ty=typeOf(k,v);
+ if(ty==="scale"){const mx=maxOf(k);return fmtN(v)+(mx!=null?"/"+fmtN(mx):"")}if(ty==="flag")return t(v==="yes"?"Gross error":"No violation");return t(v==="yes"?"Yes":"No")}
+function cls(k,v){if(v==null||v==="na")return "gy";const ty=typeOf(k,v);if(ty==="flag")return v==="yes"?"rd":"gn";
+ if(ty==="scale"){const mx=maxOf(k);return Number(v)>=(mx==null?Number(v):mx)?"gn":Number(v)===0?"rd":"am"}return v==="yes"?"gn":"rd"}
+function opts(k,sel){let vals;if(!k)vals=["yes","no","na"];else if(k.type==="scale")vals=k.scale.slice().sort((a,b)=>b-a).concat(k.na_allowed?["na"]:[]);
+ else if(k.type==="flag")vals=["no","yes"];else vals=["yes","no"].concat(k.na_allowed?["na"]:[]);
+ return vals.map(x=>`<option value="${esc(x)}"${String(x)===String(sel)?" selected":""}>${esc(lab(k,x))}</option>`).join("")}
+function parseAns(k,raw){return raw!=="na"&&k&&k.type==="scale"?Number(raw):raw}
+function previewTotal(cid,nv){const ev=cur.ev,C=cur.cl;if(!ev||!C)return null;let num=0,den=0;
+ for(const c of ev.criteria){const k=C.criteria.find(x=>x.id===c.criterion_id);if(!k||k.type==="flag")continue;const v=c.criterion_id===cid?nv:c.answer;if(v==="na")continue;
+  const w=Number(k.weight)||0;den+=w;num+=k.type==="scale"?Number(v)/maxOf(k)*w:(v==="yes"?w:0)}return den?r2(num/den*100):null}
+const tsLabel=m=>{const ts=String(m.ts||"");if(!/T\d{2}:\d{2}/.test(ts))return ts;const hm=(ts.match(/T(\d{2}:\d{2}:\d{2})/)||[])[1]||"";
+ if(typeof m.t!=="number"||!isFinite(m.t))return hm;const s0=Math.max(0,Math.round(m.t));return "+"+String(Math.floor(s0/60)).padStart(2,"0")+":"+String(s0%60).padStart(2,"0")+(hm?" · "+hm:"")};
+const msgRef=i=>`<button class="chip" data-j="${esc(i)}">#${Number(i)+1}</button>`;
+function evidence(c){const T=cur.conv.messages,ids=(c.evidence_msg_ids||[]).filter(i=>T[i]);let h="";
+ if(ids.length){const q=T[ids[0]].text;h+=`<div class="ev"><small>${t("Evidence")}:</small>${ids.map(msgRef).join("")}<small>“${esc(q.length>90?q.slice(0,90)+"…":q)}”</small></div>`}
+ const r=c.checked_range;if(Array.isArray(r)&&r.length===2)h+=`<div class="ev"><small>${t("Checked range")}: ${t("messages")} ${Number(r[0])+1}–${Number(r[1])+1}</small><button class="chip" data-j="${esc(r[0])}">#${Number(r[0])+1}</button></div>`;
+ return h}
+function appealsFor(cid){const ev=cur.ev;return cur.appeals.filter(a=>a.criterion_id===cid&&(!ev||a.evaluation_id==null||a.evaluation_id===ev.evaluation_id||a.status==="open"))}
+const otherEv=a=>cur.ev&&a.evaluation_id!=null&&a.evaluation_id!==cur.ev.evaluation_id?` <small>(${t("for evaluation")} #${esc(a.evaluation_id)})</small>`:"";
+function decisionText(a,k){const d=a.decision||{};if(!d||!Object.keys(d).length)return "";const o=d.original_answer,n=d.new_answer,ch=d.changed!==undefined?d.changed:String(o)!==String(n);
+ return `<div><b>${t("Decision")}:</b> ${t(ch?"Changed":"Confirmed")}${ch&&n!==undefined?` (${esc(lab(k,o))} → ${esc(lab(k,n))})`:""}${d.reason?" — "+esc(d.reason):""}${d.final_total!=null&&d.original_total!=null&&d.final_total!==d.original_total?` · ${t("total")}: ${fmtT(d.original_total)} → ${fmtT(d.final_total)}`:""}</div>`}
+function appealUI(c,k){const list=appealsFor(c.criterion_id),open=list.find(a=>a.status==="open"),last=list[list.length-1];let h="";
+ list.filter(a=>a.status!=="open").forEach(a=>{h+=`<div class="ap"><b>${t("Appeal")}:</b> ${esc(a.comment)}${decisionText(a,k)}</div>`});
+ if(open){h+=`<div class="ap"><b>${t("Appeal")}:</b> ${esc(open.comment)} <span class="pl am">${t("Pending")}</span>${otherEv(open)}`;
+  if(role==="reviewer"){const id=esc(c.criterion_id);h+=`<div class="fm"><select id="dv-${id}" data-pv="${id}"><option value="confirm">${t("Confirm")}</option><option value="change">${t("Change")}</option></select>
+<select id="dn-${id}" data-pv="${id}" disabled>${opts(k,c.answer)}</select><div id="pv-${id}" class="est"></div><textarea id="dr-${id}" placeholder="${esc(t("Reason"))}"></textarea>
+<button class="btn pr s" data-d="${esc(open.id)}" data-c="${id}">${t("Save decision")}</button></div>`}
+  return h+"</div>"}
+ if(role==="operator"&&cur.ev){const id=esc(c.criterion_id);h+=`<div style="margin-top:6px"><button class="btn s" data-fa="${id}">${t("Dispute")}</button></div><div class="fm hid" id="fa-${id}"><textarea id="ft-${id}" placeholder="${esc(t("Your comment"))}"></textarea><button class="btn pr s" data-sa="${id}">${t("Send appeal")}</button></div>`}
+ return h||(last?"":"")}
+function card(){if(!cur)return;const C=cur.conv,ev=cur.ev,T=C.messages;
+ $("#ct").textContent=C.conversation_id;$("#cm").innerHTML=`<span class="pl gy">${esc(C.language||"")}</span><span class="pl gy">${esc(t(C.channel||""))}</span>${C.group_id?`<span class="pl gy">${esc(C.group_id)}</span>`:""}`+(ev?(ev.needs_review?`<span class="pl am">${t("Needs review")}</span>`:`<span class="pl gy">${t("Evaluated")}</span>`):`<span class="pl gy">${t("Not evaluated")}</span>`);
+ $("#cev").textContent=t(ev?"Re-evaluate":"Evaluate");
+ $("#au").innerHTML=C.has_audio&&ONLINE?`<audio controls preload="none" src="${esc(API+"/audio/"+enc(C.conversation_id))}"></audio>`:"";
+ $("#tr").innerHTML=T.map((m,i)=>`<div class="m ${esc(m.speaker)}" id="m${i}"><div class="mm"><b>${esc(t(m.speaker))}</b><span title="${esc(m.ts||"")}">#${i+1} · ${esc(tsLabel(m))}</span></div>${esc(m.text)}</div>`).join("");
+ if(!ev){$("#cban").innerHTML="";$("#sm").innerHTML=`<div class="em" style="width:100%">${t("Not evaluated")}</div>`;$("#meta").innerHTML="";$("#cr").innerHTML="";return}
+ const flags=ev.criteria.filter(c=>{const k=def(c.criterion_id);return typeOf(k,c.answer)==="flag"&&c.answer==="yes"});
+ $("#cban").innerHTML=ev.critical_error?`<div class="crit"><b>${t("Gross error found")}.</b> ${flags.map(c=>esc(c.explanation||"")).join(" ")}${flags.map(c=>evidence(c)).join("")}</div>`:"";
+ const secName=id=>{const s=cur.cl&&(cur.cl.sections||[]).find(x=>x.id===id);return s?s.name:id};
+ const hist=Array.isArray(ev.appeal_history)?ev.appeal_history:[];
+ $("#sm").innerHTML=`<div><small>${t("Total score")}</small><div class="big">${fmtT(ev.total)}</div>${hist.length?`<small>${t("Appeal history")}: ${hist.map(h=>esc(h.criterion_id||"")+" "+esc(fmtA(h.old!==undefined?h.old:h.old_answer!==undefined?h.old_answer:h.original_answer))+" → "+esc(fmtA(h.new!==undefined?h.new:h.new_answer))+(h.old_total!=null&&h.new_total!=null?` (${fmtT(h.old_total)} → ${fmtT(h.new_total)})`:"")).join("; ")}</small>`:""}</div>
+<div>${ev.critical_error?`<span class="pl rd">${t("Gross error")}</span>`:""}${ev.needs_review?`<div><span class="pl am">${t("Needs review")}</span></div>`:""}${(ev.sections||[]).filter(s=>Number(s.max)>0).map(s=>`<div><small>${esc(secName(s.section_id))}: <b>${fmtN(s.points)} / ${fmtN(s.max)}</b></small></div>`).join("")}</div>`;
+ const tok=ev.tokens||{};
+ $("#meta").innerHTML=`<div class="meta"><div class="kv"><span>${t("Model")}: <b>${esc(ev.model||"—")}</b></span><span>${t("LLM calls")}: <b>${esc(ev.llm_calls??"—")}</b></span><span>${t("Tokens")}: <b>${esc(tok.in??"—")} / ${esc(tok.out??"—")}</b></span><span>${t("Cost")}: <b>$${esc(Number(ev.cost_usd||0).toFixed(4))}</b></span><span>${t("Checklist version")}: <b>${esc(ev.checklist_version??"—")}</b></span><span>${t("Evaluation")}: <b>#${esc(ev.evaluation_id??"—")}</b></span></div>
+${Array.isArray(ev.asked_criteria)&&ev.asked_criteria.length&&ev.asked_criteria.length<ev.criteria.length?`<div>${t("Asked the AI")}: ${ev.asked_criteria.map(esc).join(", ")}</div>`:""}
+<details><summary>${t("What the AI saw")}</summary><small>${t("Facts computed by code before the AI (timings, events, language):")}</small><pre class="facts">${esc(JSON.stringify(ev.facts||{},null,2))}</pre></details></div>`;
+ $("#cr").innerHTML=ev.criteria.map(c=>{const k=def(c.criterion_id),ty=typeOf(k,c.answer),orig=c.original_answer;
+  const w=c.weight,ew=c.effective_weight,pts=c.points;
+  const line=ty==="flag"?t("Gross error")+" · "+t("not counted in the score"):`${t("Weight")}: ${fmtN(w)}${ew!=null&&Number(ew)!==Number(w)?` → ${fmtN(ew)}`:""} · ${t("Points")}: ${pts==null?"—":fmtN(pts)+" "+t("of")+" "+fmtN(w)}`;
+  return `<div class="cr"><div class="ct"><b>${esc(c.name||c.criterion_id)}</b><span>${c.needs_review?`<span class="pl am">${t("Needs review")}</span>`:""}<span class="pl ${cls(k,c.answer)}">${esc(lab(k,c.answer))}</span></span></div>
+<small>${esc(c.criterion_id)} · ${line}${k&&k.section?" · "+esc(secName(k.section)):""}${c.confidence!=null?" · "+t("Confidence")+": "+Math.round(Number(c.confidence)*100)+"%":""}${c.reused?" · <i>"+t("from previous evaluation")+"</i>":""}</small>
+${orig!==undefined&&orig!==null&&String(orig)!==String(c.answer)?`<br><small>${t("Original")}: ${esc(lab(k,orig))} · ${t("changed on appeal")}</small>`:""}
+<p class="ex">${c.answer==="na"?"N/A: "+esc(c.na_reason||c.explanation||""):esc(c.explanation||"")}</p>${evidence(c)}${appealUI(c,k)}</div>`}).join("")}
+function jump(i){const el=$("#m"+i);if(!el)return;$$(".m.hl").forEach(x=>x.classList.remove("hl"));el.classList.add("hl");el.scrollIntoView({behavior:"smooth",block:"center"});
+ const a=$("#au audio"),m=cur&&cur.conv.messages[i];if(a&&m&&typeof m.t==="number"&&isFinite(m.t)&&m.t>=0){try{a.currentTime=m.t}catch(_){}}}
+
+/* ---------- appeals page ---------- */
+let appealRows=[];
+async function loadAppeals(){if(!ONLINE){appealRows=[];apps();return}const s=$("#apst").value,d=await api("GET","/appeals"+(s?"?status="+enc(s):""));if(d===null){fail();return}appealRows=Array.isArray(d)?d:[];apps()}
+function apps(){$("#apr").innerHTML=appealRows.map(x=>{const k=cl&&cl.criteria.find(z=>z.id===x.criterion_id);
+ return `<tr><td>${esc(x.id)}</td><td>${x.conversation_id?`<button class="lk" data-o="${esc(x.conversation_id)}">${esc(x.conversation_id)}</button>`:"#"+esc(x.evaluation_id)}</td><td>${esc(x.criterion_id)}${k?" · "+esc(k.name):""}</td><td>${esc(x.comment)}</td>
+<td><span class="pl ${x.status==="open"?"am":"gn"}">${t(x.status==="open"?"Pending":"Resolved")}</span></td><td>${x.decision?decisionText(x,k):"—"}</td><td><small>${esc(x.created_at||"")}</small></td></tr>`}).join("")||`<tr><td colspan="7" class="em">${t("No appeals")}</td></tr>`}
+
+/* ---------- shell ---------- */
+function applyLang(){$$("[data-i]").forEach(e=>{e.textContent=t(e.dataset.i)});$$("[data-ph]").forEach(e=>e.placeholder=t(e.dataset.ph))}
+function render(){if(page==="checklist"){editor();diffBox();impactBox()}if(page==="list")rows();if(page==="card")card();if(page==="appeals")apps();applyLang()}
+function go(p){page=p;["checklist","list","card","appeals"].forEach(x=>$("#p-"+x).classList.toggle("hid",x!==p));$$(".nb").forEach(b=>b.classList.toggle("on",b.dataset.p===(p==="card"?"list":p)));
+ if(p==="appeals")loadAppeals();if(p==="list")loadList(true);render();window.scrollTo(0,0)}
+
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-p],[data-o],[data-e],[data-j],[data-fa],[data-sa],[data-d],[data-x],[data-ro]");if(!b)return;const d=b.dataset;
+ if(d.p)go(d.p);
+ else if(d.o)openCard(d.o);
+ else if(d.e)evaluateOne(d.e,b);
+ else if(d.j!==undefined)jump(+d.j);
+ else if(d.fa)$("#fa-"+CSS.escape(d.fa)).classList.toggle("hid");
+ else if(d.sa){const v=$("#ft-"+CSS.escape(d.sa)).value.trim();if(!v){toast(t("Fill in the text"));return}b.disabled=true;
+  const x=await api("POST","/appeals",{evaluation_id:cur.ev.evaluation_id,criterion_id:d.sa,comment:v});b.disabled=false;if(!x){fail();return}toast(t("Appeal sent"));await openCard(cur.conv.conversation_id,true)}
+ else if(d.d){const cid=d.c,k=def(cid),r=$("#dr-"+CSS.escape(cid)).value.trim();if(!r){toast(t("Fill in the text"));return}
+  const c=cur.ev.criteria.find(z=>z.criterion_id===cid),vd=$("#dv-"+CSS.escape(cid)).value,nv=vd==="change"?parseAns(k,$("#dn-"+CSS.escape(cid)).value):c.answer;b.disabled=true;
+  const x=await api("POST","/appeals/"+enc(d.d)+"/decision",{new_answer:nv,reason:r});b.disabled=false;if(!x){fail();return}toast(t("Decision saved"));
+  if(x.evaluation&&x.evaluation.criteria){cur.ev=x.evaluation}await openCard(cur.conv.conversation_id,true);loadList(true)}
+ else if(d.x){draft.criteria.splice(+d.x,1);editor()}
+ else if(d.ro){role=d.ro;$$("[data-ro]").forEach(x=>x.classList.toggle("on",x.dataset.ro===role));render()}});
+document.addEventListener("change",e=>{const el=e.target;if(!el.dataset||el.dataset.pv===undefined)return;const cid=el.dataset.pv,k=def(cid),dv=$("#dv-"+CSS.escape(cid)),dn=$("#dn-"+CSS.escape(cid)),pv=$("#pv-"+CSS.escape(cid));
+ dn.disabled=dv.value!=="change";if(dv.value!=="change"){pv.textContent="";return}const tot=previewTotal(cid,parseAns(k,dn.value));
+ pv.textContent=tot==null?"":t("Preview (estimate on the page, not saved)")+": "+t("total")+" "+fmtT(cur.ev.total)+" → "+fmtT(tot)});
+$("#clr").addEventListener("change",e=>{const tr=e.target.closest("tr"),f=e.target.dataset.f;if(!tr||!f||!draft)return;const k=draft.criteria[+tr.dataset.k],v=e.target;
+ if(f==="weight")k.weight=Math.max(0,Number(v.value)||0);
+ else if(f==="na_allowed")k.na_allowed=v.checked;
+ else if(f==="scale"){const a=Array.from(new Set(v.value.split(/[,;\s]+/).map(s=>s.trim()).filter(s=>s!==""&&!isNaN(s)).map(Number))).sort((x,y)=>x-y);k.scale=a.length?a:[0,1]}
+ else if(f==="type"){k.type=v.value;if(k.type==="scale"&&!(k.scale&&k.scale.length>1))k.scale=[0,5,10];if(k.type==="flag"){k.weight=0;k.na_allowed=false}}
+ else if(f==="section")k.section=v.value||null;
+ else k[f]=v.value;
+ if(f==="type"||f==="scale")editor();else ws()});
+$("#clr").addEventListener("input",e=>{const f=e.target.dataset.f;if(f==="name"||f==="instruction"){const k=draft.criteria[+e.target.closest("tr").dataset.k];k[f]=e.target.value;ws()}});
+$("#rules").addEventListener("input",e=>{if(draft){draft.rules=e.target.value;ws()}});
+$("#add").onclick=()=>{if(!draft)return;const n=Math.max.apply(null,[0].concat(draft.criteria.map(k=>parseInt(String(k.id).replace(/^\D+/,""),10)||0)))+1,id="c"+String(n).padStart(2,"0")+"_custom";
+ draft.criteria.push({id,code:id,name:"",type:"yes_no",weight:0,na_allowed:false,scale:null,scale_descriptions:null,instruction:"",section:null,evidence_roles:null,resample:1});editor()};
+$("#rst").onclick=()=>{if(cl){draft=toUI(cl);editor()}};
+$("#sv").onclick=saveCL;$("#rev").onclick=reeval;
+$("#dev").onclick=async()=>{if(!ONLINE){fail();return}$("#dev").disabled=true;const r=await api("POST","/import?group_id=DEV");$("#dev").disabled=false;if(!r){fail();return}toast(t("Imported")+": "+(r.imported??"")+" "+t("conversations"));loadList()};
+$("#evall").onclick=evaluateMissing;
+$("#up").onclick=()=>$("#fi").click();
+$("#fi").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;let d;
+ try{d=JSON.parse(await f.text());d=d&&d.data&&Array.isArray(d.data.records)?d.data.records:d;if(!(Array.isArray(d)?d:[d]).every(r=>r&&Array.isArray(r.transcript)))throw 0}catch(_){toast(t("Invalid file"));return}
+ const r=await api("POST","/conversations",d);if(!r){fail();return}toast(t("Imported")+": "+(r.imported??"")+" "+t("conversations"));await loadList(true);
+ if(r.conversation_ids&&r.conversation_ids.length===1)openCard(r.conversation_ids[0])};
+const ovl=$("#ovl");$("#pst").onclick=()=>{ovl.classList.remove("hid");$("#ptx").focus()};$("#pcan").onclick=()=>ovl.classList.add("hid");
+document.addEventListener("keydown",e=>{if(e.key==="Escape")ovl.classList.add("hid")});
+$("#pok").onclick=async()=>{const text=$("#ptx").value.trim();if(!text){toast(t("Fill in the text"));return}
+ const body={text,channel:$("#pch").value};if($("#plg").value)body.language=$("#plg").value;if($("#pid").value.trim())body.conversation_id=$("#pid").value.trim();
+ const r=await api("POST","/conversations/text",body);if(!r){fail();return}ovl.classList.add("hid");$("#ptx").value="";$("#pid").value="";toast(t("Imported")+": "+r.conversation_id);await loadList(true);openCard(r.conversation_id)};
+$("#ex").onclick=()=>{const q=x=>'"'+String(x==null?"":x).replace(/"/g,'""')+'"',h=["conversation_id","language","channel","total","critical_error","needs_review","open_appeals","model","checklist_version"];
+ const body=[h].concat(shown().map(c=>h.map(k=>c[k]))).map(r=>r.map(q).join(",")).join("\n");
+ const u=URL.createObjectURL(new Blob(["﻿"+body],{type:"text/csv"})),a=document.createElement("a");a.href=u;a.download="cqa_results.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+$("#bk").onclick=()=>go("list");$("#cev").onclick=e=>{if(cur)evaluateOne(cur.conv.conversation_id,e.currentTarget)};
+let qT;$("#q").addEventListener("input",()=>{rows();clearTimeout(qT);qT=setTimeout(()=>loadList(true),400)});
+["#fl","#fc","#fcrit","#fnr","#fap"].forEach(s=>$(s).addEventListener("change",()=>{rows();loadList(true)}));
+$("#apst").addEventListener("change",loadAppeals);
+$("#lg").onchange=e=>{lang=e.target.value;document.documentElement.lang=lang==="kz"?"kk":lang;render()};
+
+async function init(){const n=$("#demo");
+ if(!ONLINE){n.textContent=t("Offline: no backend. Open this page from the backend (http://localhost:8000/ui/) or set window.CQA_API.");n.classList.remove("hid");go("list");return}
+ const ok=await loadCL();if(!ok&&lastErr){n.textContent=t("Backend is not reachable")+": "+lastErr;n.classList.remove("hid")}
+ /* Встраивание в Dynamics 365: ?conversation_id=… (или ?id=…) сразу открывает карточку; ?page=checklist|appeals; ?lang=kz|ru|en; ?role=operator */
+ const qs=new URLSearchParams(location.search),L=qs.get("lang"),R=qs.get("role"),id=qs.get("conversation_id")||qs.get("id");
+ if(L&&M[L]!==undefined||L==="en"){lang=L;$("#lg").value=L;document.documentElement.lang=L==="kz"?"kk":L}
+ if(R==="operator"||R==="reviewer"){role=R;$$("[data-ro]").forEach(x=>x.classList.toggle("on",x.dataset.ro===role))}
+ if(id){await openCard(id);if(page==="card")return}
+ const P=qs.get("page");go(P==="checklist"||P==="appeals"?P:"list")}
+init();
+})();
+</script></body></html>

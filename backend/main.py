@@ -8,14 +8,18 @@ import httpx
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import db
-from .appeals import apply_decision
+from .appeals import apply_decision, apply_to_evaluation
+from .checklists import check_checklist, diff_checklists
 from .config import settings
 from .evaluator import evaluate
+from .facts import build_messages
 from .ingest import extract_audio_src, fetch_group, parse_pasted_text, validate_record
 from .models import Checklist
+from .reevaluate import reevaluate_conversation
 
 app = FastAPI(title="CQA")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -41,16 +45,46 @@ def import_group(group_id: str):
 
 
 @app.get("/conversations")
-def conversations():
-    return db.list_conversations()
+def conversations(critical: bool | None = None, needs_review: bool | None = None,
+                  has_open_appeal: bool | None = None, language: str | None = None,
+                  channel: str | None = None, q: str | None = None):
+    """Список для интерфейса с фильтрами. Не оценённые диалоги: total/critical_error/... = null."""
+    out = []
+    for x in db.list_conversations():
+        if critical is not None and bool(x["critical_error"]) != critical:
+            continue
+        if needs_review is not None and bool(x["needs_review"]) != needs_review:
+            continue
+        if has_open_appeal is not None and (x["open_appeals"] > 0) != has_open_appeal:
+            continue
+        if language and (x["language"] or "").upper() != language.upper():
+            continue
+        if channel and x["channel"] != channel:
+            continue
+        if q and q.lower() not in x["conversation_id"].lower():
+            continue
+        out.append(x)
+    return out
 
 
 @app.get("/conversations/{cid}")
 def conversation(cid: str):
+    """Карточка: реплики с номером idx (как в evidence_msg_ids) и смещением t (сек) для перемотки записи."""
     conv = db.get_conversation(cid)
     if not conv:
         raise HTTPException(404)
-    return {"conversation": conv, "evaluation": db.latest_evaluation(cid)}
+    msgs = build_messages(conv["transcript"])
+    return {
+        "conversation": {
+            "conversation_id": conv["conversation_id"], "channel": conv.get("channel"),
+            "language": conv.get("language"), "group_id": db.conversation_group(cid),
+            "has_audio": bool(conv.get("audio_url")),
+            "messages": [{"idx": m["idx"], "ts": m["ts"], "t": m["t"], "speaker": m["speaker"], "text": m["text"]}
+                         for m in msgs],
+        },
+        "evaluation": db.latest_evaluation(cid),
+        "appeals": db.appeals_for_conversation(cid),
+    }
 
 
 @app.get("/audio/{cid}")
@@ -74,14 +108,14 @@ class PasteIn(BaseModel):
 
 
 @app.post("/conversations")
-def upload_conversations(body: dict | list[dict]):
+def upload_conversations(body: dict | list[dict], group_id: str = "upload"):
     """JSON-файл: одна запись или массив в формате API организаторов."""
     records = body if isinstance(body, list) else [body]
     try:
         records = [validate_record(r) for r in records]
     except ValueError as e:
         raise HTTPException(422, str(e))
-    db.save_conversations("upload", records)
+    db.save_conversations(group_id, records)
     return {"imported": len(records), "conversation_ids": [r["conversation_id"] for r in records]}
 
 
@@ -113,7 +147,19 @@ def checklist(checklist_id: str, version: int | None = None):
 @app.post("/checklists")
 def save_checklist(cl: Checklist):
     """Каждое сохранение создаёт новую версию. Старые оценки остаются привязаны к своей версии."""
+    errors = check_checklist(cl)
+    if errors:
+        raise HTTPException(422, errors)
     return {"checklist_id": cl.checklist_id, "version": db.save_checklist(cl)}
+
+
+@app.get("/checklists/{checklist_id}/diff")
+def checklist_diff(checklist_id: str, from_version: int, to_version: int | None = None):
+    """Что изменилось между версиями: changed/added - ИИ спросят заново, weight_only - только пересчёт."""
+    old, new = db.get_checklist(checklist_id, from_version), db.get_checklist(checklist_id, to_version)
+    if not old or not new:
+        raise HTTPException(404, "версия чек-листа не найдена")
+    return diff_checklists(old, new)
 
 
 # ---------- оценка ----------
@@ -159,6 +205,45 @@ def evaluate_batch(body: BatchIn, bg: BackgroundTasks):
     job_id = uuid.uuid4().hex[:8]
     JOBS[job_id] = {"status": "running", "total": len(ids), "done": 0, "failed": []}
     bg.add_task(_batch, job_id, ids, body.checklist_id, body.version)
+    return {"job_id": job_id, "total": len(ids)}
+
+
+class ReevaluateIn(BaseModel):
+    checklist_id: str = "chat-quality"
+    version: int | None = None                  # None -> последняя версия
+    conversation_ids: list[str] | None = None   # None -> все диалоги, у которых есть оценка
+
+
+def _reevaluate(job_id: str, ids: list[str], checklist_id: str, version: int | None):
+    job = JOBS[job_id]
+    new_cl = db.get_checklist(checklist_id, version)
+
+    def one(i):
+        try:
+            conv, prev = db.get_conversation(i), db.latest_evaluation(i)
+            old_cl = db.get_checklist(prev["checklist_id"], prev["checklist_version"]) if prev else None
+            ev, row = reevaluate_conversation(conv, prev, old_cl, new_cl)
+            row["evaluation_id"] = ev["evaluation_id"] = db.save_evaluation(ev)
+            job["diffs"].append(row)
+        except Exception as e:  # одна ошибка не должна ронять пакет
+            job["failed"].append({"id": i, "error": str(e)})
+        finally:
+            job["done"] += 1
+
+    with ThreadPoolExecutor(settings.BATCH_WORKERS) as ex:
+        list(ex.map(one, ids))
+    job["status"] = "finished"
+
+
+@app.post("/reevaluate")
+def reevaluate(body: ReevaluateIn, bg: BackgroundTasks):
+    """Переоценка после правки чек-листа: ИИ спрашивают только о новых/изменённых критериях."""
+    if not db.get_checklist(body.checklist_id, body.version):
+        raise HTTPException(404, "чек-лист не найден")
+    ids = body.conversation_ids or [c["conversation_id"] for c in db.list_conversations() if c["evaluation_id"]]
+    job_id = uuid.uuid4().hex[:8]
+    JOBS[job_id] = {"status": "running", "total": len(ids), "done": 0, "failed": [], "diffs": []}
+    bg.add_task(_reevaluate, job_id, ids, body.checklist_id, body.version)
     return {"job_id": job_id, "total": len(ids)}
 
 
@@ -214,4 +299,17 @@ def decide(aid: int, d: DecisionIn):
     except ValueError as e:
         raise HTTPException(422, str(e))
     db.save_decision(aid, res)
-    return res
+    updated = apply_to_evaluation(ev, cl, res, aid)   # решение меняет саму оценку: итог в карточке актуален
+    db.update_evaluation(ap["evaluation_id"], updated)
+    return {**res, "evaluation": db.get_evaluation(ap["evaluation_id"])}
+
+
+# ---------- интерфейс ----------
+_FRONTEND = settings.DEFAULT_CHECKLIST.parent.parent / "frontend"
+if _FRONTEND.is_dir():
+    app.mount("/ui", StaticFiles(directory=str(_FRONTEND), html=True), name="ui")
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse("/ui/" if _FRONTEND.is_dir() else "/docs")
