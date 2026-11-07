@@ -48,10 +48,7 @@ def load_records(group: str, refetch: bool) -> list[dict]:
 
 def active_checklist() -> Checklist:
     db.init()
-    if not db.list_checklists():
-        db.save_checklist(Checklist.model_validate(json.loads(settings.DEFAULT_CHECKLIST.read_text("utf-8"))))
-    latest = max(db.list_checklists(), key=lambda x: x["latest_version"])
-    return db.get_checklist(latest["checklist_id"])
+    return db.sync_default_checklist(settings.DEFAULT_CHECKLIST)
 
 
 def main() -> None:

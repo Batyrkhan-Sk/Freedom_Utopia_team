@@ -68,3 +68,31 @@ def test_auth_error_is_not_retried(fake):
 def test_claude_gets_no_temperature():
     assert not llm._supports_temperature("anthropic/claude-opus-5-5")
     assert llm._supports_temperature("gemini/gemini-3.5-flash")
+
+
+TPM = "Rate limit reached for model `m` on tokens per minute (TPM): Limit 8000, Used 7000. Please try again in 12.5s."
+
+
+def test_per_minute_limit_waits_for_same_model(fake):
+    calls = fake(RateLimitError(TPM), RateLimitError(TPM), RateLimitError(TPM), "ok")
+    r = llm.complete([])
+    assert r.model == "gemini/main"                                   # не ушли на слабую резервную
+    assert calls.count(("sleep", 13.5)) == 3
+
+
+def test_daily_limit_or_too_large_switches_immediately(fake):
+    calls = fake(RateLimitError("Rate limit reached on tokens per day (TPD): Limit 200000. Try again in 7m."), "ok")
+    assert llm.complete([]).model == "groq/backup" and not any(c[0] == "sleep" for c in calls)
+    calls = fake(RateLimitError("Request too large for model `m` on output tokens per minute (OTPM): Limit 1000"), "ok")
+    assert llm.complete([]).model == "groq/backup"
+
+
+def test_ollama_gets_context_window_and_long_timeout(monkeypatch):
+    seen = {}
+    import litellm
+    monkeypatch.setattr(litellm, "completion", lambda **kw: seen.update(kw) or _Resp())
+    llm._call("ollama_chat/gemma4:e4b", [], 0.0)
+    assert seen["num_ctx"] == settings.NUM_CTX and seen["timeout"] == settings.LOCAL_TIMEOUT
+    seen.clear()
+    llm._call("groq/openai/gpt-oss-120b", [], 0.0)
+    assert "num_ctx" not in seen

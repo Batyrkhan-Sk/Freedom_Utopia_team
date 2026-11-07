@@ -34,6 +34,8 @@ _last_call = [0.0]
 TRANSIENT = ("RateLimit", "ServiceUnavailable", "Timeout", "InternalServer", "APIConnection", "BadGateway")
 SWITCH_MODEL = ("PaymentRequired", "BudgetExceeded", "NotFound")   # эта модель недоступна -> следующая
 _RETRY_IN = re.compile(r"(?:retry|try again)\s+in\s+([0-9.]+)\s*s", re.I)
+_PER_MINUTE = re.compile(r"per minute|\((?:TPM|RPM|OTPM|ITPM)\)", re.I)
+_HOPELESS = re.compile(r"per day|\((?:TPD|RPD)\)|request too large", re.I)
 
 
 def _throttle() -> None:
@@ -66,7 +68,14 @@ def _call(model: str, messages: list[dict], temperature: float):
     import litellm  # импорт здесь, чтобы тесты шли без litellm
     litellm.suppress_debug_info = True
 
-    kwargs = dict(model=model, messages=messages, max_tokens=settings.MAX_TOKENS, timeout=settings.LLM_TIMEOUT)
+    local = model.startswith(("ollama/", "ollama_chat/"))
+    kwargs = dict(model=model, messages=messages, max_tokens=settings.MAX_TOKENS,
+                  timeout=settings.LOCAL_TIMEOUT if local else settings.LLM_TIMEOUT)
+    if local:
+        # У Ollama окно по умолчанию ~4K токенов: промпт (~5K) обрезался бы молча, вместе с инструкциями
+        kwargs["num_ctx"] = settings.NUM_CTX
+        if not settings.LOCAL_THINK:
+            kwargs["think"] = False   # рассуждения на ноутбуке удлиняют ответ в 3-4 раза
     if _supports_temperature(model):
         kwargs["temperature"] = temperature
     if settings.JSON_MODE:
@@ -94,12 +103,20 @@ def complete(messages: list[dict], temperature: float = 0.0) -> LLMResponse:
                     raise
                 mi, fails_on_model = mi + 1, 0
                 continue
+            msg = str(e)
+            if _HOPELESS.search(msg):   # дневной лимит или запрос больше лимита модели: ждать бесполезно
+                if mi + 1 >= len(models):
+                    raise
+                mi, fails_on_model = mi + 1, 0
+                continue
             if not any(x in name for x in TRANSIENT) or attempt == settings.LLM_RETRIES:
                 raise
-            m = _RETRY_IN.search(str(e))
+            m = _RETRY_IN.search(msg)
             delay = float(m.group(1)) + 1 if m else min(5 * 3 ** fails_on_model, 60)
-            fails_on_model += 1
-            if fails_on_model >= 2 and mi + 1 < len(models):
-                mi, fails_on_model = mi + 1, 0
+            # Минутный лимит с понятной паузой - ждём ту же модель, а не уходим на более слабую резервную
+            if not (m and delay <= 90 and _PER_MINUTE.search(msg)):
+                fails_on_model += 1
+                if fails_on_model >= 2 and mi + 1 < len(models):
+                    mi, fails_on_model = mi + 1, 0
             time.sleep(min(delay, 90))
     raise last_error  # pragma: no cover

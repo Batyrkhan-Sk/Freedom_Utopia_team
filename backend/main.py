@@ -1,7 +1,6 @@
 """HTTP-слой. Тонкий: вся логика в evaluator / scoring / appeals."""
 from __future__ import annotations
 
-import json
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
@@ -26,8 +25,7 @@ JOBS: dict[str, dict] = {}
 @app.on_event("startup")
 def startup():
     db.init()
-    if not db.list_checklists():  # первая загрузка: стартовый чек-лист из файла
-        db.save_checklist(Checklist.model_validate(json.loads(settings.DEFAULT_CHECKLIST.read_text("utf-8"))))
+    db.sync_default_checklist(settings.DEFAULT_CHECKLIST)   # изменился файл чек-листа -> новая версия в базе
 
 
 # ---------- данные ----------

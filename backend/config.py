@@ -34,6 +34,9 @@ class Settings:
     RPM = float(os.getenv("CQA_RPM", "0"))                  # лимит запросов в минуту, 0 = без ограничения
     LLM_RETRIES = int(os.getenv("CQA_LLM_RETRIES", "6"))    # повторы при сетевых ошибках и лимитах
     LLM_TIMEOUT = float(os.getenv("CQA_LLM_TIMEOUT", "120"))
+    LOCAL_TIMEOUT = float(os.getenv("CQA_LOCAL_TIMEOUT", "900"))   # локальная модель на ноутбуке медленнее
+    NUM_CTX = int(os.getenv("CQA_NUM_CTX", "8192"))              # окно контекста для Ollama (промпт ~5K)
+    LOCAL_THINK = os.getenv("CQA_LOCAL_THINK", "0") == "1"       # режим рассуждений локальной модели
     REASONING_EFFORT = os.getenv("CQA_REASONING_EFFORT", "")  # low/medium/high, если модель поддерживает
     JSON_MODE = os.getenv("CQA_JSON_MODE", "1") == "1"
     MAX_TOKENS = int(os.getenv("CQA_MAX_TOKENS", "8000"))   # модели с рассуждением тратят токены до ответа

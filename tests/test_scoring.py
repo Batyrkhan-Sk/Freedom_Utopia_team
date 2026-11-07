@@ -68,3 +68,20 @@ def test_round_half_up_ignores_float_noise():
     assert 20.5 / 80 * 100 != 25.625          # float-шум
     assert round_half_up(20.5 / 80 * 100) == 25.63
     assert round_half_up(2.675) == 2.68 and round_half_up(1.005) == 1.01
+
+
+def test_default_checklist_file_change_creates_new_version(tmp_path, monkeypatch):
+    import json
+    from backend import db
+    from backend.config import settings
+    monkeypatch.setattr(settings, "DB_PATH", str(tmp_path / "t.sqlite"))
+    f = tmp_path / "cl.json"
+    data = json.loads(settings.DEFAULT_CHECKLIST.read_text("utf-8"))
+    f.write_text(json.dumps(data, ensure_ascii=False), "utf-8")
+    db.init()
+    assert db.sync_default_checklist(f).version == 1
+    assert db.sync_default_checklist(f).version == 1            # файл не менялся -> та же версия
+    data["rules"] += " Новое правило."
+    f.write_text(json.dumps(data, ensure_ascii=False), "utf-8")
+    cl = db.sync_default_checklist(f)
+    assert cl.version == 2 and cl.rules.endswith("Новое правило.")
