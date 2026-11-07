@@ -54,18 +54,37 @@ def get_conversation(cid: str) -> dict | None:
 
 
 def list_conversations() -> list[dict]:
-    q = """SELECT c.data, (SELECT data FROM evaluations e WHERE e.conversation_id=c.id
-                           ORDER BY e.id DESC LIMIT 1) AS ev FROM conversations c"""
+    """Список для интерфейса: данные последней оценки и число открытых апелляций по диалогу."""
+    q = """SELECT c.id, c.group_id, c.data,
+                  (SELECT e.id FROM evaluations e WHERE e.conversation_id=c.id ORDER BY e.id DESC LIMIT 1) AS eid
+           FROM conversations c ORDER BY c.id"""
     out = []
     with conn() as c:
-        for row in c.execute(q):
-            d, ev = json.loads(row["data"]), (json.loads(row["ev"]) if row["ev"] else None)
-            out.append({"conversation_id": d["conversation_id"], "channel": d["channel"],
-                        "language": d["language"], "n_messages": len(d["transcript"]),
+        rows = c.execute(q).fetchall()
+        for row in rows:
+            d = json.loads(row["data"])
+            ev = None
+            if row["eid"]:
+                ev = json.loads(c.execute("SELECT data FROM evaluations WHERE id=?", (row["eid"],)).fetchone()["data"])
+            open_n = c.execute("""SELECT COUNT(*) n FROM appeals a JOIN evaluations e ON e.id=a.evaluation_id
+                                  WHERE e.conversation_id=? AND a.status='open'""", (row["id"],)).fetchone()["n"]
+            out.append({"conversation_id": d["conversation_id"], "channel": d.get("channel"),
+                        "language": d.get("language"), "group_id": row["group_id"],
+                        "n_messages": len(d.get("transcript") or []),
+                        "evaluation_id": row["eid"],
                         "total": ev["total"] if ev else None,
+                        "critical_error": ev["critical_error"] if ev else None,
                         "needs_review": ev["needs_review"] if ev else None,
-                        "critical_error": ev["critical_error"] if ev else None})
+                        "open_appeals": open_n,
+                        "model": ev.get("model") if ev else None,
+                        "checklist_version": ev.get("checklist_version") if ev else None})
     return out
+
+
+def conversation_group(cid: str) -> str | None:
+    with conn() as c:
+        row = c.execute("SELECT group_id FROM conversations WHERE id=?", (cid,)).fetchone()
+    return row["group_id"] if row else None
 
 
 # ----- checklists (каждое сохранение = новая версия) -----
@@ -117,7 +136,18 @@ def save_evaluation(ev: dict) -> int:
         cur = c.execute("INSERT INTO evaluations(conversation_id, checklist_id, checklist_version, data) VALUES(?,?,?,?)",
                         (ev["conversation_id"], ev["checklist_id"], ev["checklist_version"],
                          json.dumps(ev, ensure_ascii=False)))
+        # Открытые апелляции переходят на новую оценку: решение должно менять актуальную оценку, а не старую
+        c.execute("""UPDATE appeals SET evaluation_id=? WHERE status='open' AND evaluation_id IN
+                     (SELECT id FROM evaluations WHERE conversation_id=? AND id<>?)""",
+                  (cur.lastrowid, ev["conversation_id"], cur.lastrowid))
         return cur.lastrowid
+
+
+def update_evaluation(eid: int, ev: dict):
+    """Оценка после решения по апелляции: перезаписываем на месте, история - в appeal_history."""
+    data = {k: v for k, v in ev.items() if k != "evaluation_id"}
+    with conn() as c:
+        c.execute("UPDATE evaluations SET data=? WHERE id=?", (json.dumps(data, ensure_ascii=False), eid))
 
 
 def get_evaluation(eid: int) -> dict | None:
@@ -147,15 +177,37 @@ def get_appeal(aid: int) -> dict | None:
     return {**dict(row), "decision": json.loads(dec["data"]) if dec else None} if row else None
 
 
-def list_appeals(status: str | None = None) -> list[dict]:
+def _appeal_rows(where: str, args: tuple) -> list[dict]:
+    q = f"""SELECT a.*, e.conversation_id,
+                   (SELECT d.data FROM decisions d WHERE d.appeal_id=a.id ORDER BY d.id DESC LIMIT 1) AS dec
+            FROM appeals a LEFT JOIN evaluations e ON e.id=a.evaluation_id {where} ORDER BY a.id DESC"""
     with conn() as c:
-        rows = c.execute("SELECT * FROM appeals" + (" WHERE status=?" if status else "") + " ORDER BY id DESC",
-                         (status,) if status else ()).fetchall()
-    return [dict(r) for r in rows]
+        rows = c.execute(q, args).fetchall()
+    out = []
+    for r in rows:
+        d = dict(r)
+        dec = d.pop("dec")
+        d["decision"] = json.loads(dec) if dec else None
+        out.append(d)
+    return out
+
+
+def list_appeals(status: str | None = None) -> list[dict]:
+    """status: open / decided. В каждой строке conversation_id и последнее решение (или null)."""
+    return _appeal_rows("WHERE a.status=?" if status else "", (status,) if status else ())
+
+
+def appeals_for_conversation(cid: str) -> list[dict]:
+    return _appeal_rows("WHERE e.conversation_id=?", (cid,))
 
 
 def save_decision(appeal_id: int, result: dict):
     with conn() as c:
         c.execute("INSERT INTO decisions(appeal_id, data) VALUES(?,?)",
                   (appeal_id, json.dumps(result, ensure_ascii=False)))
-        c.execute("UPDATE appeals SET status='resolved' WHERE id=?", (appeal_id,))
+    set_appeal_status(appeal_id, "decided")
+
+
+def set_appeal_status(appeal_id: int, status: str):
+    with conn() as c:
+        c.execute("UPDATE appeals SET status=? WHERE id=?", (status, appeal_id))

@@ -73,17 +73,28 @@ def _merge_votes(c, votes: list[dict]) -> dict:
     return {**rep, "confidence": round(agree * rep["confidence"], 2)}
 
 
-def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete) -> dict:
+REUSED_FIELDS = ("answer", "evidence_msg_ids", "checked_range", "na_reason", "explanation", "confidence")
+
+
+def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete, reuse: dict | None = None) -> dict:
+    """reuse: {criterion_id: запись критерия из прошлой оценки} - эти критерии не переспрашиваем у ИИ
+    (переоценка после правки чек-листа: ИИ спрашиваем только об изменённых и новых критериях)."""
     msgs = number_messages(conv["transcript"])
     facts = compute_facts(msgs, conv.get("channel", ""))
     usage = Usage()
+    reuse = {cid: v for cid, v in (reuse or {}).items() if any(c.id == cid for c in checklist.criteria)}
+    ask_ids = [c.id for c in checklist.criteria if c.id not in reuse]
 
-    norm = _ask(llm, checklist, conv, msgs, facts, None, usage)
+    norm: dict = {}
+    if ask_ids:
+        norm = _ask(llm, checklist, conv, msgs, facts, None if not reuse else ask_ids, usage)
+    for cid, prev in reuse.items():
+        norm[cid] = {k: prev.get(k) for k in REUSED_FIELDS}
 
     # Повторный опрос только для критериев с resample > 1 (шкальные, где модель чаще ошибается)
     for c in checklist.criteria:
         n = settings.resample_for(c)   # CQA_RESAMPLE=1 выключает повторный опрос
-        if n > 1 and norm[c.id]["answer"] != "na":
+        if c.id in ask_ids and n > 1 and norm[c.id]["answer"] != "na":
             votes = [norm[c.id]]
             for _ in range(n - 1):
                 votes.append(_ask(llm, checklist, conv, msgs, facts, [c.id], usage,
@@ -100,6 +111,7 @@ def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete) -> dict:
             "evidence_msg_ids": v["evidence_msg_ids"], "checked_range": v["checked_range"],
             "na_reason": v["na_reason"], "explanation": v["explanation"],
             "confidence": v["confidence"], "needs_review": v["confidence"] < settings.LOW_CONFIDENCE,
+            "reused": c.id in reuse,
         })
     return {
         "conversation_id": conv["conversation_id"],
@@ -109,4 +121,5 @@ def evaluate(conv: dict, checklist: Checklist, llm: LLMFn = complete) -> dict:
         "facts": facts, "criteria": criteria, "sections": sc["sections"],
         "total": sc["total"], "critical_error": sc["critical_error"],
         "needs_review": any(x["needs_review"] for x in criteria),
+        "asked_criteria": ask_ids,
     }
