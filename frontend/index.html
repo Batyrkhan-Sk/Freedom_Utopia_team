@@ -48,6 +48,15 @@ textarea.rules{width:100%;min-height:110px;margin-top:8px}
 @media(max-width:900px){.two{grid-template-columns:1fr}.top{padding:10px 14px}main{padding:16px 14px}}
 @media(max-width:640px){.brand{margin-right:auto}nav{order:3;flex-basis:100%}#lg{max-width:150px}h1{font-size:20px}.big{font-size:28px}.m{max-width:100%}.tools input{flex:1 1 140px}}
 .two>*{min-width:0}.mm{flex-wrap:wrap}.mm span{overflow-wrap:anywhere}
+/* упрощённый вид: меню, быстрые вкладки, кликабельные строки, детали по запросу */
+.menu{position:relative}.menu>summary{list-style:none}.menu>summary::-webkit-details-marker{display:none}
+.mnu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--ln);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:6px;display:grid;min-width:210px;z-index:10}
+.mnu button{border:0;background:0;text-align:left;padding:8px 10px;border-radius:7px;color:#405047;font-weight:600}.mnu button:hover{background:var(--gs)}
+tr.rowlink{cursor:pointer}tr.rowlink:hover td{background:#f7fbf9}.sub{display:block;font-size:11px;color:var(--mu);font-weight:400;margin-top:2px}
+.sc-g{color:var(--gd)}.sc-a{color:var(--am)}.sc-r{color:var(--rd)}td.num{font-size:15px;font-weight:800;white-space:nowrap}
+.crh{display:flex;justify-content:space-between;gap:8px;align-items:center}.crh b{cursor:help}.note2{font-size:11px;color:var(--mu);margin-top:2px}
+.cri summary{font-weight:600;font-size:12px;color:var(--gd);margin-top:6px}.cri textarea{width:100%;min-height:90px;margin-top:6px}.cri select{margin-top:6px}
+details.tech{padding:12px 16px}details.tech>summary{font-size:13px}
 </style></head><body>
 <div id="cqa">
 <header class="top"><div class="brand"><span class="mark">F</span>Freedom Broker · CQA</div>
@@ -58,31 +67,29 @@ textarea.rules{width:100%;min-height:110px;margin-top:8px}
 <div id="demo" class="note hid"></div>
 
 <section id="p-checklist" class="hid"><div class="hd"><div><h1 data-i="Checklist">Checklist</h1><div id="clv" class="mu" style="margin-top:4px"></div></div></div>
-<div class="card"><div class="sc"><table><thead><tr><th>ID</th><th data-i="Name">Name</th><th data-i="Rule">Rule</th><th data-i="Weight">Weight</th><th data-i="Type">Type</th><th data-i="Scale values">Scale values</th><th data-i="N/A allowed">N/A allowed</th><th data-i="Section">Section</th><th></th></tr></thead><tbody id="clr"></tbody></table></div>
+<div class="card"><div class="sc"><table><thead><tr><th data-i="Criterion">Criterion</th><th data-i="Weight">Weight</th><th data-i="Type">Type</th><th data-i="N/A allowed">N/A allowed</th><th></th></tr></thead><tbody id="clr"></tbody></table></div>
 <div class="bar"><button class="btn" id="add" data-i="Add criterion">Add criterion</button><span id="wsum" class="mu"></span><span id="dirty" class="pl am hid" data-i="Unsaved changes">Unsaved changes</span><span class="sp"></span><button class="btn" id="rst" data-i="Discard changes">Discard changes</button><button class="btn pr" id="sv" data-i="Save checklist">Save checklist</button><button class="btn" id="rev" data-i="Re-evaluate conversations">Re-evaluate conversations</button></div>
 <div class="diff"><details><summary data-i="General rules for the AI">General rules for the AI</summary><textarea id="rules" class="rules" aria-label="rules"></textarea><small data-i="Changing the general rules sends every criterion to the AI again on re-evaluation.">Changing the general rules sends every criterion to the AI again on re-evaluation.</small></details></div>
 <div id="cldiff" class="diff hid"></div>
 <div id="impact" class="diff hid"></div>
 </div></section>
 
-<section id="p-list"><div class="hd"><h1 data-i="Conversations">Conversations</h1><div class="acts"><button class="btn" id="ex" data-i="Export CSV">Export CSV</button><button class="btn" id="dev" data-i="Load DEV set">Load DEV set</button><button class="btn" id="pst" data-i="Paste text">Paste text</button><button class="btn" id="up" data-i="Upload JSON">Upload JSON</button><button class="btn pr" id="evall" data-i="Evaluate unevaluated">Evaluate unevaluated</button></div></div>
+<section id="p-list"><div class="hd"><h1 data-i="Conversations">Conversations</h1><div class="acts">
+<details class="menu"><summary class="btn" data-i="Data ▾">Data ▾</summary><div class="mnu"><button id="dev" data-i="Load DEV set">Load DEV set</button><button id="pst" data-i="Paste text">Paste text</button><button id="up" data-i="Upload JSON">Upload JSON</button><button id="ex" data-i="Export CSV">Export CSV</button></div></details>
+<button class="btn pr" id="evall" data-i="Evaluate unevaluated">Evaluate unevaluated</button></div></div>
 <div id="jobbar" class="card bar hid"><span id="jobtx"></span><div class="prog"><i id="jobpg"></i></div></div>
-<div class="card"><div class="tools"><input id="q" data-ph="Search ID" placeholder="Search ID">
+<div class="card"><div class="tools"><div class="seg" id="qf"><button class="on" data-qf="" data-i="All">All</button><button data-qf="critical" data-i="Gross errors">Gross errors</button><button data-qf="review" data-i="Needs review">Needs review</button><button data-qf="appeal" data-i="Appeals">Appeals</button></div>
 <select id="fl" aria-label="Language"><option value="" data-i="All languages">All languages</option><option>RU</option><option>KZ</option><option>EN</option></select>
-<select id="fc" aria-label="Channel"><option value="" data-i="All channels">All channels</option><option value="agent chat" data-i="agent chat">agent chat</option><option value="voice call" data-i="voice call">voice call</option></select>
-<label class="chkl"><input type="checkbox" id="fcrit"><span data-i="Gross errors only">Gross errors only</span></label>
-<label class="chkl"><input type="checkbox" id="fnr"><span data-i="Needs review">Needs review</span></label>
-<label class="chkl"><input type="checkbox" id="fap"><span data-i="Open appeals">Open appeals</span></label>
-<span class="sp"></span><span id="cnt" class="mu"></span></div>
-<div class="sc"><table><thead><tr><th>ID</th><th data-i="Language">Language</th><th data-i="Channel">Channel</th><th data-i="Score">Score</th><th data-i="Gross error">Gross error</th><th data-i="Status">Status</th><th data-i="Model">Model</th><th></th></tr></thead><tbody id="lr"></tbody></table></div></div></section>
+<input id="q" data-ph="Search ID" placeholder="Search ID"><span class="sp"></span><span id="cnt" class="mu"></span></div>
+<div class="sc"><table><thead><tr><th data-i="Conversation">Conversation</th><th data-i="Score">Score</th><th data-i="Status">Status</th></tr></thead><tbody id="lr"></tbody></table></div></div></section>
 
-<section id="p-card" class="hid"><div class="hd"><div><button class="btn s" id="bk" data-i="Back">Back</button><h1 id="ct" style="margin-top:10px"></h1><div id="cm" style="margin-top:6px"></div></div><div class="acts"><button class="btn pr" id="cev">Evaluate</button></div></div>
+<section id="p-card" class="hid"><div class="hd"><div><button class="btn s" id="bk" data-i="Back">Back</button><h1 id="ct" style="margin-top:10px"></h1><div id="cm" class="mu" style="margin-top:4px;font-size:12px"></div></div><div class="acts"><button class="btn" id="cev">Evaluate</button></div></div>
 <div id="cban"></div>
 <div class="two"><div class="card"><div class="ch" data-i="Transcript">Transcript</div><div id="au"></div><div id="tr" class="tr"></div></div>
-<div><div class="card sum" id="sm"></div><div class="card" id="meta"></div><div class="card" id="cr"></div></div></div></section>
+<div><div class="card sum" id="sm"></div><div class="card" id="cr"></div><div class="card" id="meta"></div></div></div></section>
 
 <section id="p-appeals" class="hid"><div class="hd"><h1 data-i="Appeals">Appeals</h1><div class="acts"><select id="apst" aria-label="Status"><option value="" data-i="All statuses">All statuses</option><option value="open" data-i="Pending">Pending</option><option value="decided" data-i="Resolved">Resolved</option></select></div></div>
-<div class="card sc"><table><thead><tr><th>#</th><th data-i="Conversation">Conversation</th><th data-i="Criterion">Criterion</th><th data-i="Comment">Comment</th><th data-i="Status">Status</th><th data-i="Decision">Decision</th><th data-i="Created">Created</th></tr></thead><tbody id="apr"></tbody></table></div></section>
+<div class="card sc"><table><thead><tr><th data-i="Conversation">Conversation</th><th data-i="Criterion">Criterion</th><th data-i="Comment">Comment</th><th data-i="Status">Status</th><th data-i="Decision">Decision</th></tr></thead><tbody id="apr"></tbody></table></div></section>
 </main>
 
 <div id="ovl" class="ovl hid" role="dialog" aria-modal="true" aria-labelledby="ovh"><div class="dlg"><h2 id="ovh" data-i="Paste a transcript">Paste a transcript</h2>
@@ -144,7 +151,9 @@ const D=[["Checklist","Чек-лист","Тексеру парағы"],["Convers
 ["Backend is not reachable","Бэкенд недоступен","Бэкенд қолжетімсіз"],["Paste a transcript","Вставить транскрипт","Транскриптті қою"],
 ["One line per message: mm:ss role: text. Roles: client, operator, bot, system (or клиент, оператор, бот, система).","По строке на реплику: мм:сс роль: текст. Роли: клиент, оператор, бот, система (или client, operator, bot, system).","Әр хабарлама жеке жолда: мм:сс рөл: мәтін. Рөлдер: клиент, оператор, бот, система (немесе client, operator, bot, system)."],
 ["Language: auto","Язык: авто","Тіл: авто"],["Conversation ID (optional)","ID диалога (необязательно)","Диалог ID (міндетті емес)"],["Cancel","Отмена","Болдырмау"],["Import","Загрузить","Жүктеу"],
-["shown","показано","көрсетілді"],["for evaluation","к оценке","бағалауға"],["was","было","бұрын"],["total","итог","қорытынды"],["Open","Открыть","Ашу"]];
+["shown","показано","көрсетілді"],["for evaluation","к оценке","бағалауға"],["was","было","бұрын"],["total","итог","қорытынды"],["Open","Открыть","Ашу"],
+["Data ▾","Данные ▾","Деректер ▾"],["All","Все","Барлығы"],["Gross errors","Грубые ошибки","Өрескел қателер"],["Technical details","Технические детали","Техникалық мәліметтер"],
+["Instruction for the AI and section","Инструкция для ИИ и секция","ЖИ-ге нұсқаулық және бөлім"],["checked","проверено","тексерілді"]];
 const M={ru:{},kz:{}};D.forEach(([e,r,k])=>{M.ru[e]=r;M.kz[e]=k});
 let lang="ru",role="reviewer",page="list",tm;
 const t=s=>(M[lang]&&M[lang][s])||s;
@@ -180,17 +189,18 @@ const CLID=()=>(cl&&cl.checklist_id)||"chat-quality";
 const dirty=()=>!!(cl&&draft)&&JSON.stringify(fromUI(draft))!==JSON.stringify(fromUI(toUI(cl)));
 const wsum=d=>d.criteria.reduce((a,k)=>a+(k.type==="flag"?0:Number(k.weight)||0),0);
 
-function editor(){if(!draft){$("#clr").innerHTML=`<tr><td colspan="9" class="em">${t("Checklist not loaded")}</td></tr>`;$("#clv").textContent="";$("#wsum").textContent="";return}
+function editor(){if(!draft){$("#clr").innerHTML=`<tr><td colspan="5" class="em">${t("Checklist not loaded")}</td></tr>`;$("#clv").textContent="";$("#wsum").textContent="";return}
  $("#clv").textContent=(draft.name||draft.checklist_id)+" · "+t("Version")+" "+(cl?cl.version:"—");
  const secs=draft.sections||[];
- $("#clr").innerHTML=draft.criteria.map((k,i)=>`<tr data-k="${i}"><td><b>${esc(k.id)}</b><br><small>${esc(k.code||"")}</small></td>
-<td><input data-f="name" value="${esc(k.name)}"></td><td><textarea data-f="instruction" rows="4">${esc(k.instruction||"")}</textarea></td>
+ /* Основное на виду (название, вес, тип, N/A); инструкция для ИИ и секция - по клику */
+ $("#clr").innerHTML=draft.criteria.map((k,i)=>`<tr data-k="${i}"><td style="min-width:320px"><input data-f="name" value="${esc(k.name)}"><span class="sub">${esc(k.id)}${k.code&&k.code!==k.id?" · "+esc(k.code):""}</span>
+<details class="cri"><summary>${t("Instruction for the AI and section")}</summary><textarea data-f="instruction" rows="5">${esc(k.instruction||"")}</textarea>
+<select data-f="section"><option value="">${t("Section")}: —</option>${secs.map(s=>`<option value="${esc(s.id)}"${k.section===s.id?" selected":""}>${t("Section")}: ${esc(s.name||s.id)}</option>`).join("")}</select></details></td>
 <td><input class="nm" data-f="weight" type="number" min="0" step="any" value="${esc(k.weight)}"${k.type==="flag"?" disabled":""}></td>
-<td><select data-f="type">${[["yes_no","Yes/No"],["scale","Scale"],["flag","Flag"]].map(([v,l])=>`<option value="${v}"${k.type===v?" selected":""}>${t(l)}</option>`).join("")}</select></td>
-<td><input class="nm" data-f="scale" value="${esc((k.scale||[]).join(","))}"${k.type==="scale"?"":" disabled"}></td>
+<td><select data-f="type">${[["yes_no","Yes/No"],["scale","Scale"],["flag","Flag"]].map(([v,l])=>`<option value="${v}"${k.type===v?" selected":""}>${t(l)}</option>`).join("")}</select>
+${k.type==="scale"?`<input class="nm" data-f="scale" style="margin-top:6px" title="${esc(t("Scale values"))}" value="${esc((k.scale||[]).join(","))}">`:""}</td>
 <td><input data-f="na_allowed" type="checkbox"${k.na_allowed?" checked":""}${k.type==="flag"?" disabled":""}></td>
-<td><select data-f="section"><option value="">—</option>${secs.map(s=>`<option value="${esc(s.id)}"${k.section===s.id?" selected":""}>${esc(s.name||s.id)}</option>`).join("")}</select></td>
-<td><button class="btn s" data-x="${i}">${t("Delete")}</button></td></tr>`).join("");
+<td><button class="btn s" data-x="${i}" title="${esc(t("Delete"))}">✕</button></td></tr>`).join("");
  $("#rules").value=draft.rules||"";ws()}
 function ws(){if(!draft)return;const w=wsum(draft),ok=Math.abs(w-100)<1e-9;$("#wsum").textContent="Σ "+t("Weight")+": "+fmtN(w)+(ok?"":" ≠ 100");$("#wsum").style.color=ok?"":"var(--rd)";$("#dirty").classList.toggle("hid",!dirty())}
 function diffBox(){const b=$("#cldiff");if(!lastDiff){b.classList.add("hid");return}const d=lastDiff.d,L=a=>a&&a.length?a.map(esc).join(", "):t("none");
@@ -224,21 +234,24 @@ function pollJob(id,onTick,onDone){const tick=async()=>{const j=await api("GET",
  if(["finished","done","completed","failed","error"].includes(j.status))onDone&&onDone(j);else setTimeout(tick,2000)};tick()}
 
 /* ---------- conversations ---------- */
-function listQuery(){const p=new URLSearchParams();if($("#fcrit").checked)p.set("critical","true");if($("#fnr").checked)p.set("needs_review","true");if($("#fap").checked)p.set("has_open_appeal","true");
- if($("#fl").value)p.set("language",$("#fl").value);if($("#fc").value)p.set("channel",$("#fc").value);const q=$("#q").value.trim();if(q)p.set("q",q);const s=p.toString();return s?"?"+s:""}
+let quick="";   /* быстрая вкладка: "" | critical | review | appeal */
+function listQuery(){const p=new URLSearchParams();if(quick==="critical")p.set("critical","true");if(quick==="review")p.set("needs_review","true");if(quick==="appeal")p.set("has_open_appeal","true");
+ if($("#fl").value)p.set("language",$("#fl").value);const q=$("#q").value.trim();if(q)p.set("q",q);const s=p.toString();return s?"?"+s:""}
 async function loadList(quiet){if(!ONLINE){convs=[];rows();return}const d=await api("GET","/conversations"+listQuery());if(d===null){if(!quiet)fail();return}convs=Array.isArray(d)?d:[];rows()}
-function shown(){const q=$("#q").value.trim().toLowerCase(),lg=$("#fl").value,ch=$("#fc").value,fc=$("#fcrit").checked,fn=$("#fnr").checked,fa=$("#fap").checked;
+function shown(){const q=$("#q").value.trim().toLowerCase(),lg=$("#fl").value;
  /* те же фильтры на странице - на случай, если сервер какой-то не поддерживает */
- return convs.filter(c=>(!q||String(c.conversation_id).toLowerCase().includes(q))&&(!lg||c.language===lg)&&(!ch||c.channel===ch)&&(!fc||c.critical_error)&&(!fn||c.needs_review)&&(!fa||(c.open_appeals||0)>0))
+ return convs.filter(c=>(!q||String(c.conversation_id).toLowerCase().includes(q))&&(!lg||c.language===lg)&&(quick!=="critical"||c.critical_error)&&(quick!=="review"||c.needs_review)&&(quick!=="appeal"||(c.open_appeals||0)>0))
   .sort((a,b)=>(b.critical_error?1:0)-(a.critical_error?1:0)||((a.total==null)-(b.total==null))||((a.total==null?0:a.total)-(b.total==null?0:b.total))||String(a.conversation_id).localeCompare(String(b.conversation_id)))}
-function status(c){if(c.total==null&&!c.evaluation_id)return `<span class="pl gy">${t("Not evaluated")}</span>`;let h="";
- if((c.open_appeals||0)>0)h+=`<span class="pl am">${t("Appeal")}: ${esc(c.open_appeals)}</span>`;if(c.needs_review)h+=`<span class="pl am">${t("Needs review")}</span>`;
- return h||`<span class="pl gy">${t("Evaluated")}</span>`}
+/* Один статус на строку, по важности: грубая ошибка > апелляция > нужна проверка > оценён */
+function status(c){if(c.total==null&&!c.evaluation_id)return `<span class="pl gy">${t("Not evaluated")}</span>`;
+ if(c.critical_error)return `<span class="pl rd">${t("Gross error")}</span>`;
+ if((c.open_appeals||0)>0)return `<span class="pl am">${t("Appeal")}: ${esc(c.open_appeals)}</span>`;
+ if(c.needs_review)return `<span class="pl am">${t("Needs review")}</span>`;return `<span class="pl gn">${t("Evaluated")}</span>`}
+const scCls=v=>v==null?"":v>=85?"sc-g":v>=60?"sc-a":"sc-r";
 function rows(){const L=shown();$("#cnt").textContent=convs.length?t("shown")+": "+L.length+" / "+convs.length:"";
- $("#lr").innerHTML=L.map(c=>`<tr><td><button class="lk" data-o="${esc(c.conversation_id)}">${esc(c.conversation_id)}</button></td><td>${esc(c.language||"")}</td><td>${esc(t(c.channel||""))}</td>
-<td><b>${fmtT(c.total)}</b></td><td>${c.critical_error?`<span class="pl rd">${t("Gross error")}</span>`:"—"}</td><td>${status(c)}</td><td><small>${esc(c.model||"")}</small></td>
-<td style="white-space:nowrap"><button class="btn s" data-o="${esc(c.conversation_id)}">${t("Open card")}</button> <button class="btn s" data-e="${esc(c.conversation_id)}">${t(c.total==null?"Evaluate":"Re-evaluate")}</button></td></tr>`).join("")
-  ||`<tr><td colspan="8" class="em">${ONLINE?t("No conversations. Load the DEV set, paste a transcript or upload a JSON file."):t("Offline: no backend. Open this page from the backend (http://localhost:8000/ui/) or set window.CQA_API.")}</td></tr>`}
+ $("#lr").innerHTML=L.map(c=>`<tr class="rowlink" data-o="${esc(c.conversation_id)}"><td><b>${esc(c.conversation_id)}</b><span class="sub">${esc(c.language||"")} · ${esc(t(c.channel||""))}</span></td>
+<td class="num ${scCls(c.total)}">${fmtT(c.total)}</td><td>${status(c)}</td></tr>`).join("")
+  ||`<tr><td colspan="3" class="em">${ONLINE?t("No conversations. Load the DEV set, paste a transcript or upload a JSON file."):t("Offline: no backend. Open this page from the backend (http://localhost:8000/ui/) or set window.CQA_API.")}</td></tr>`}
 async function evaluateOne(id,btn){if(!ONLINE){fail();return}if(btn)btn.disabled=true;toast(t("Evaluating…")+" "+id,60000);
  const r=await api("POST",`/evaluate/${enc(id)}?checklist_id=${enc(CLID())}`);if(btn)btn.disabled=false;
  if(!r){fail();return}toast(t("Evaluation done")+": "+id+" · "+fmtT(r.total));await loadList(true);if(page==="card"&&cur&&cur.conv.conversation_id===id)await openCard(id,true)}
@@ -271,11 +284,11 @@ function previewTotal(cid,nv){const ev=cur.ev,C=cur.cl;if(!ev||!C)return null;le
   const w=Number(k.weight)||0;den+=w;num+=k.type==="scale"?Number(v)/maxOf(k)*w:(v==="yes"?w:0)}return den?r2(num/den*100):null}
 const tsLabel=m=>{const ts=String(m.ts||"");if(!/T\d{2}:\d{2}/.test(ts))return ts;const hm=(ts.match(/T(\d{2}:\d{2}:\d{2})/)||[])[1]||"";
  if(typeof m.t!=="number"||!isFinite(m.t))return hm;const s0=Math.max(0,Math.round(m.t));return "+"+String(Math.floor(s0/60)).padStart(2,"0")+":"+String(s0%60).padStart(2,"0")+(hm?" · "+hm:"")};
-const msgRef=i=>`<button class="chip" data-j="${esc(i)}">#${Number(i)+1}</button>`;
-function evidence(c){const T=cur.conv.messages,ids=(c.evidence_msg_ids||[]).filter(i=>T[i]);let h="";
- if(ids.length){const q=T[ids[0]].text;h+=`<div class="ev"><small>${t("Evidence")}:</small>${ids.map(msgRef).join("")}<small>“${esc(q.length>90?q.slice(0,90)+"…":q)}”</small></div>`}
- const r=c.checked_range;if(Array.isArray(r)&&r.length===2)h+=`<div class="ev"><small>${t("Checked range")}: ${t("messages")} ${Number(r[0])+1}–${Number(r[1])+1}</small><button class="chip" data-j="${esc(r[0])}">#${Number(r[0])+1}</button></div>`;
- return h}
+/* Ссылка на реплику: номер с 1, текст реплики - во всплывающей подсказке */
+const msgRef=i=>{const m=cur&&cur.conv.messages[i],q=m?String(m.text):"";return `<button class="chip" data-j="${esc(i)}" title="${esc(q.length>200?q.slice(0,200)+"…":q)}">#${Number(i)+1}</button>`};
+function evidence(c){const T=cur.conv.messages,ids=(c.evidence_msg_ids||[]).filter(i=>T[i]),r=c.checked_range,hasR=Array.isArray(r)&&r.length===2;
+ if(!ids.length&&!hasR)return "";
+ return `<div class="ev">${ids.map(msgRef).join("")}${hasR?`<small>${t("checked")}: ${Number(r[0])+1}–${Number(r[1])+1}</small>${ids.length?"":msgRef(r[0])}`:""}</div>`}
 function appealsFor(cid){const ev=cur.ev;return cur.appeals.filter(a=>a.criterion_id===cid&&(!ev||a.evaluation_id==null||a.evaluation_id===ev.evaluation_id||a.status==="open"))}
 const otherEv=a=>cur.ev&&a.evaluation_id!=null&&a.evaluation_id!==cur.ev.evaluation_id?` <small>(${t("for evaluation")} #${esc(a.evaluation_id)})</small>`:"";
 function decisionText(a,k){const d=a.decision||{};if(!d||!Object.keys(d).length)return "";const o=d.original_answer,n=d.new_answer,ch=d.changed!==undefined?d.changed:String(o)!==String(n);
@@ -290,7 +303,7 @@ function appealUI(c,k){const list=appealsFor(c.criterion_id),open=list.find(a=>a
  if(role==="operator"&&cur.ev){const id=esc(c.criterion_id);h+=`<div style="margin-top:6px"><button class="btn s" data-fa="${id}">${t("Dispute")}</button></div><div class="fm hid" id="fa-${id}"><textarea id="ft-${id}" placeholder="${esc(t("Your comment"))}"></textarea><button class="btn pr s" data-sa="${id}">${t("Send appeal")}</button></div>`}
  return h||(last?"":"")}
 function card(){if(!cur)return;const C=cur.conv,ev=cur.ev,T=C.messages;
- $("#ct").textContent=C.conversation_id;$("#cm").innerHTML=`<span class="pl gy">${esc(C.language||"")}</span><span class="pl gy">${esc(t(C.channel||""))}</span>${C.group_id?`<span class="pl gy">${esc(C.group_id)}</span>`:""}`+(ev?(ev.needs_review?`<span class="pl am">${t("Needs review")}</span>`:`<span class="pl gy">${t("Evaluated")}</span>`):`<span class="pl gy">${t("Not evaluated")}</span>`);
+ $("#ct").textContent=C.conversation_id;$("#cm").textContent=[C.language,t(C.channel||""),C.group_id].filter(Boolean).join(" · ");
  $("#cev").textContent=t(ev?"Re-evaluate":"Evaluate");
  $("#au").innerHTML=C.has_audio&&ONLINE?`<audio controls preload="none" src="${esc(API+"/audio/"+enc(C.conversation_id))}"></audio>`:"";
  $("#tr").innerHTML=T.map((m,i)=>`<div class="m ${esc(m.speaker)}" id="m${i}"><div class="mm"><b>${esc(t(m.speaker))}</b><span title="${esc(m.ts||"")}">#${i+1} · ${esc(tsLabel(m))}</span></div>${esc(m.text)}</div>`).join("");
@@ -299,18 +312,23 @@ function card(){if(!cur)return;const C=cur.conv,ev=cur.ev,T=C.messages;
  $("#cban").innerHTML=ev.critical_error?`<div class="crit"><b>${t("Gross error found")}.</b> ${flags.map(c=>esc(c.explanation||"")).join(" ")}${flags.map(c=>evidence(c)).join("")}</div>`:"";
  const secName=id=>{const s=cur.cl&&(cur.cl.sections||[]).find(x=>x.id===id);return s?s.name:id};
  const hist=Array.isArray(ev.appeal_history)?ev.appeal_history:[];
- $("#sm").innerHTML=`<div><small>${t("Total score")}</small><div class="big">${fmtT(ev.total)}</div>${hist.length?`<small>${t("Appeal history")}: ${hist.map(h=>esc(h.criterion_id||"")+" "+esc(fmtA(h.old!==undefined?h.old:h.old_answer!==undefined?h.old_answer:h.original_answer))+" → "+esc(fmtA(h.new!==undefined?h.new:h.new_answer))+(h.old_total!=null&&h.new_total!=null?` (${fmtT(h.old_total)} → ${fmtT(h.new_total)})`:"")).join("; ")}</small>`:""}</div>
-<div>${ev.critical_error?`<span class="pl rd">${t("Gross error")}</span>`:""}${ev.needs_review?`<div><span class="pl am">${t("Needs review")}</span></div>`:""}${(ev.sections||[]).filter(s=>Number(s.max)>0).map(s=>`<div><small>${esc(secName(s.section_id))}: <b>${fmtN(s.points)} / ${fmtN(s.max)}</b></small></div>`).join("")}</div>`;
+ /* Итог: балл, один главный статус, секции. История апелляций - короткой строкой */
+ $("#sm").innerHTML=`<div><small>${t("Total score")}</small><div class="big ${scCls(ev.total)}">${fmtT(ev.total)}</div>${ev.critical_error?`<span class="pl rd">${t("Gross error")}</span>`:ev.needs_review?`<span class="pl am">${t("Needs review")}</span>`:`<span class="pl gn">${t("Evaluated")}</span>`}
+${hist.length?`<div><small>${t("Appeal history")}: ${hist.map(h=>esc(h.criterion_id||"")+" "+esc(fmtA(h.old!==undefined?h.old:h.old_answer!==undefined?h.old_answer:h.original_answer))+" → "+esc(fmtA(h.new!==undefined?h.new:h.new_answer))).join("; ")}</small></div>`:""}</div>
+<div>${(ev.sections||[]).filter(s=>Number(s.max)>0).map(s=>`<div><small>${esc(secName(s.section_id))}: <b>${fmtN(s.points)} / ${fmtN(s.max)}</b></small></div>`).join("")}</div>`;
+ /* Технические детали (модель, токены, стоимость, факты для ИИ) - свернуты */
  const tok=ev.tokens||{};
- $("#meta").innerHTML=`<div class="meta"><div class="kv"><span>${t("Model")}: <b>${esc(ev.model||"—")}</b></span><span>${t("LLM calls")}: <b>${esc(ev.llm_calls??"—")}</b></span><span>${t("Tokens")}: <b>${esc(tok.in??"—")} / ${esc(tok.out??"—")}</b></span><span>${t("Cost")}: <b>$${esc(Number(ev.cost_usd||0).toFixed(4))}</b></span><span>${t("Checklist version")}: <b>${esc(ev.checklist_version??"—")}</b></span><span>${t("Evaluation")}: <b>#${esc(ev.evaluation_id??"—")}</b></span></div>
+ $("#meta").innerHTML=`<details class="tech"><summary>${t("Technical details")}</summary><div class="meta" style="padding:10px 0 0"><div class="kv"><span>${t("Model")}: <b>${esc(ev.model||"—")}</b></span><span>${t("LLM calls")}: <b>${esc(ev.llm_calls??"—")}</b></span><span>${t("Tokens")}: <b>${esc(tok.in??"—")} / ${esc(tok.out??"—")}</b></span><span>${t("Cost")}: <b>$${esc(Number(ev.cost_usd||0).toFixed(4))}</b></span><span>${t("Checklist version")}: <b>${esc(ev.checklist_version??"—")}</b></span><span>${t("Evaluation")}: <b>#${esc(ev.evaluation_id??"—")}</b></span></div>
 ${Array.isArray(ev.asked_criteria)&&ev.asked_criteria.length&&ev.asked_criteria.length<ev.criteria.length?`<div>${t("Asked the AI")}: ${ev.asked_criteria.map(esc).join(", ")}</div>`:""}
-<details><summary>${t("What the AI saw")}</summary><small>${t("Facts computed by code before the AI (timings, events, language):")}</small><pre class="facts">${esc(JSON.stringify(ev.facts||{},null,2))}</pre></details></div>`;
+<details><summary>${t("What the AI saw")}</summary><small>${t("Facts computed by code before the AI (timings, events, language):")}</small><pre class="facts">${esc(JSON.stringify(ev.facts||{},null,2))}</pre></details></div></details>`;
+ /* Критерий: название + ответ, объяснение, ссылки на реплики. Вес, баллы, уверенность, id - в подсказке к названию */
  $("#cr").innerHTML=ev.criteria.map(c=>{const k=def(c.criterion_id),ty=typeOf(k,c.answer),orig=c.original_answer;
   const w=c.weight,ew=c.effective_weight,pts=c.points;
-  const line=ty==="flag"?t("Gross error")+" · "+t("not counted in the score"):`${t("Weight")}: ${fmtN(w)}${ew!=null&&Number(ew)!==Number(w)?` → ${fmtN(ew)}`:""} · ${t("Points")}: ${pts==null?"—":fmtN(pts)+" "+t("of")+" "+fmtN(w)}`;
-  return `<div class="cr"><div class="ct"><b>${esc(c.name||c.criterion_id)}</b><span>${c.needs_review?`<span class="pl am">${t("Needs review")}</span>`:""}<span class="pl ${cls(k,c.answer)}">${esc(lab(k,c.answer))}</span></span></div>
-<small>${esc(c.criterion_id)} · ${line}${k&&k.section?" · "+esc(secName(k.section)):""}${c.confidence!=null?" · "+t("Confidence")+": "+Math.round(Number(c.confidence)*100)+"%":""}${c.reused?" · <i>"+t("from previous evaluation")+"</i>":""}</small>
-${orig!==undefined&&orig!==null&&String(orig)!==String(c.answer)?`<br><small>${t("Original")}: ${esc(lab(k,orig))} · ${t("changed on appeal")}</small>`:""}
+  const tip=[c.criterion_id,ty==="flag"?t("not counted in the score"):`${t("Weight")}: ${fmtN(w)}${ew!=null&&Number(ew)!==Number(w)?` → ${fmtN(ew)}`:""}`,ty==="flag"?"":`${t("Points")}: ${pts==null?"—":fmtN(pts)}`,
+   k&&k.section?secName(k.section):"",c.confidence!=null?t("Confidence")+": "+Math.round(Number(c.confidence)*100)+"%":""].filter(Boolean).join(" · ");
+  const notes=[orig!==undefined&&orig!==null&&String(orig)!==String(c.answer)?t("Original")+": "+lab(k,orig)+" · "+t("changed on appeal"):"",c.reused?t("from previous evaluation"):""].filter(Boolean);
+  return `<div class="cr"><div class="crh"><b title="${esc(tip)}">${esc(c.name||c.criterion_id)}</b><span>${c.needs_review?`<span class="pl am">${t("Needs review")}</span>`:""}<span class="pl ${cls(k,c.answer)}">${esc(lab(k,c.answer))}</span></span></div>
+${notes.length?`<div class="note2">${esc(notes.join(" · "))}</div>`:""}
 <p class="ex">${c.answer==="na"?"N/A: "+esc(c.na_reason||c.explanation||""):esc(c.explanation||"")}</p>${evidence(c)}${appealUI(c,k)}</div>`}).join("")}
 function jump(i){const el=$("#m"+i);if(!el)return;$$(".m.hl").forEach(x=>x.classList.remove("hl"));el.classList.add("hl");el.scrollIntoView({behavior:"smooth",block:"center"});
  const a=$("#au audio"),m=cur&&cur.conv.messages[i];if(a&&m&&typeof m.t==="number"&&isFinite(m.t)&&m.t>=0){try{a.currentTime=m.t}catch(_){}}}
@@ -319,8 +337,8 @@ function jump(i){const el=$("#m"+i);if(!el)return;$$(".m.hl").forEach(x=>x.class
 let appealRows=[];
 async function loadAppeals(){if(!ONLINE){appealRows=[];apps();return}const s=$("#apst").value,d=await api("GET","/appeals"+(s?"?status="+enc(s):""));if(d===null){fail();return}appealRows=Array.isArray(d)?d:[];apps()}
 function apps(){$("#apr").innerHTML=appealRows.map(x=>{const k=cl&&cl.criteria.find(z=>z.id===x.criterion_id);
- return `<tr><td>${esc(x.id)}</td><td>${x.conversation_id?`<button class="lk" data-o="${esc(x.conversation_id)}">${esc(x.conversation_id)}</button>`:"#"+esc(x.evaluation_id)}</td><td>${esc(x.criterion_id)}${k?" · "+esc(k.name):""}</td><td>${esc(x.comment)}</td>
-<td><span class="pl ${x.status==="open"?"am":"gn"}">${t(x.status==="open"?"Pending":"Resolved")}</span></td><td>${x.decision?decisionText(x,k):"—"}</td><td><small>${esc(x.created_at||"")}</small></td></tr>`}).join("")||`<tr><td colspan="7" class="em">${t("No appeals")}</td></tr>`}
+ return `<tr><td title="${esc(x.created_at||"")}">${x.conversation_id?`<button class="lk" data-o="${esc(x.conversation_id)}">${esc(x.conversation_id)}</button>`:"#"+esc(x.evaluation_id)}</td><td>${k?esc(k.name):esc(x.criterion_id)}</td><td>${esc(x.comment)}</td>
+<td><span class="pl ${x.status==="open"?"am":"gn"}">${t(x.status==="open"?"Pending":"Resolved")}</span></td><td>${x.decision?decisionText(x,k):"—"}</td></tr>`}).join("")||`<tr><td colspan="5" class="em">${t("No appeals")}</td></tr>`}
 
 /* ---------- shell ---------- */
 function applyLang(){$$("[data-i]").forEach(e=>{e.textContent=t(e.dataset.i)});$$("[data-ph]").forEach(e=>e.placeholder=t(e.dataset.ph))}
@@ -328,8 +346,12 @@ function render(){if(page==="checklist"){editor();diffBox();impactBox()}if(page=
 function go(p){page=p;["checklist","list","card","appeals"].forEach(x=>$("#p-"+x).classList.toggle("hid",x!==p));$$(".nb").forEach(b=>b.classList.toggle("on",b.dataset.p===(p==="card"?"list":p)));
  if(p==="appeals")loadAppeals();if(p==="list")loadList(true);render();window.scrollTo(0,0)}
 
-document.addEventListener("click",async e=>{const b=e.target.closest("[data-p],[data-o],[data-e],[data-j],[data-fa],[data-sa],[data-d],[data-x],[data-ro]");if(!b)return;const d=b.dataset;
- if(d.p)go(d.p);
+document.addEventListener("click",async e=>{
+ /* меню «Данные ▾» закрывается после выбора пункта или клика мимо */
+ $$("details.menu[open]").forEach(m=>{if(!m.contains(e.target)||e.target.closest(".mnu button"))m.removeAttribute("open")});
+ const b=e.target.closest("[data-qf],[data-p],[data-o],[data-e],[data-j],[data-fa],[data-sa],[data-d],[data-x],[data-ro]");if(!b)return;const d=b.dataset;
+ if(d.qf!==undefined){quick=d.qf;$$("#qf [data-qf]").forEach(x=>x.classList.toggle("on",x.dataset.qf===quick));rows();loadList(true)}
+ else if(d.p)go(d.p);
  else if(d.o)openCard(d.o);
  else if(d.e)evaluateOne(d.e,b);
  else if(d.j!==undefined)jump(+d.j);
@@ -376,7 +398,7 @@ $("#ex").onclick=()=>{const q=x=>'"'+String(x==null?"":x).replace(/"/g,'""')+'"'
  const u=URL.createObjectURL(new Blob(["﻿"+body],{type:"text/csv"})),a=document.createElement("a");a.href=u;a.download="cqa_results.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 $("#bk").onclick=()=>go("list");$("#cev").onclick=e=>{if(cur)evaluateOne(cur.conv.conversation_id,e.currentTarget)};
 let qT;$("#q").addEventListener("input",()=>{rows();clearTimeout(qT);qT=setTimeout(()=>loadList(true),400)});
-["#fl","#fc","#fcrit","#fnr","#fap"].forEach(s=>$(s).addEventListener("change",()=>{rows();loadList(true)}));
+$("#fl").addEventListener("change",()=>{rows();loadList(true)});
 $("#apst").addEventListener("change",loadAppeals);
 $("#lg").onchange=e=>{lang=e.target.value;document.documentElement.lang=lang==="kz"?"kk":lang;render()};
 

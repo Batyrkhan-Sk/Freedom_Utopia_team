@@ -119,7 +119,7 @@ def main() -> None:
     for cid in ids:
         e = cache.get(cid) or {"ok": False, "error": "не оценён"}
         if e["ok"]:
-            results.append(to_result(e["evaluation"], checklist))
+            results.append(to_result(e["evaluation"], checklist, lengths.get(cid)))
             models.append(e["evaluation"]["model"])
             cost += e["evaluation"].get("cost_usd") or 0
         else:

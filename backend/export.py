@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 from .models import Checklist
+from .refs import REVIEWER_PREFIX, human_refs
 
 SCHEMA_VERSION = "1.0"
 LOCAL_PREFIXES = ("ollama/", "ollama_chat/", "lm_studio/", "local/")
@@ -65,7 +66,15 @@ def _turns(x: dict) -> list[int]:
     return sorted({i + 1 for i in ids})
 
 
-def to_result(ev: dict, checklist: Checklist) -> dict:
+def _rationale(x: dict, n_msgs: int | None) -> str:
+    """Объяснение ИИ с номерами реплик с 1 - как в evidence_turns (текст проверяющего не трогаем)."""
+    text = x.get("explanation") or ""
+    if n_msgs and not text.startswith(REVIEWER_PREFIX):
+        text = human_refs(text, n_msgs)
+    return text
+
+
+def to_result(ev: dict, checklist: Checklist, n_msgs: int | None = None) -> dict:
     """Одна успешная оценка (результат evaluator.evaluate) -> запись results[]."""
     by_id = {c["criterion_id"]: c for c in ev["criteria"]}
     criteria = []
@@ -74,7 +83,7 @@ def to_result(ev: dict, checklist: Checklist) -> dict:
         criteria.append({
             "criterion_id": c.code or c.id,
             "value": _value(x["answer"]),
-            "rationale": x.get("explanation") or "",
+            "rationale": _rationale(x, n_msgs),
             "evidence_turns": _turns(x),
         })
     return {
