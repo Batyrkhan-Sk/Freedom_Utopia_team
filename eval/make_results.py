@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from backend import db  # noqa: E402
+from backend.checklists import diff_checklists  # noqa: E402
 from backend.config import settings  # noqa: E402
 from backend.evaluator import evaluate  # noqa: E402
 from backend.export import build_document, error_result, to_result, validate_document  # noqa: E402
@@ -52,9 +53,23 @@ def load_records(group: str, refetch: bool) -> list[dict]:
     return records
 
 
-def active_checklist() -> Checklist:
+def active_checklist(reset: bool = False) -> Checklist:
     db.init()
+    if reset:   # правки из интерфейса (например, в демо) отменяются: действующим снова становится файл
+        db.save_checklist(Checklist.model_validate_json(settings.DEFAULT_CHECKLIST.read_text("utf-8")))
     return db.sync_default_checklist(settings.DEFAULT_CHECKLIST)
+
+
+def checklist_drift(active: Checklist) -> list[str]:
+    """Чем действующий чек-лист отличается от config/checklist.default.json (пусто - ничем)."""
+    base = Checklist.model_validate_json(settings.DEFAULT_CHECKLIST.read_text("utf-8"))
+    d = diff_checklists(base, active)
+    old = {c.id: c for c in base.criteria}
+    new = {c.id: c for c in active.criteria}
+    out = [f"вес {i}: {old[i].weight:g} → {new[i].weight:g}" for i in d["weight_only"]]
+    out += [f"изменён {i}" for i in d["changed"]] + [f"добавлен {i}" for i in d["added"]]
+    out += [f"удалён {i}" for i in d["removed"]] + (["изменены общие правила"] if d["rules_changed"] else [])
+    return out
 
 
 def main() -> None:
@@ -69,6 +84,8 @@ def main() -> None:
     p.add_argument("--limit", type=int, help="взять первые N диалогов набора (для репетиции)")
     p.add_argument("--custom-checklist", action="store_true",
                    help="чек-лист изменён (критерий заменён): не требовать ровно 8 официальных кодов")
+    p.add_argument("--reset-checklist", action="store_true",
+                   help="отменить правки чек-листа из интерфейса (например, сделанные в демо): взять файл")
     a = p.parse_args()
     group = a.group.upper()
     out = ROOT / "results" / group.lower() / "results.json"
@@ -79,8 +96,15 @@ def main() -> None:
         records = records[:a.limit]
     ids_all = [r["conversation_id"] for r in records]
     lengths = {r["conversation_id"]: len(r["transcript"]) for r in records}
-    checklist = active_checklist()
+    checklist = active_checklist(a.reset_checklist)
     strict = not a.custom_checklist
+    drift = checklist_drift(checklist)
+    if drift:
+        print(f"⚠ Действующий чек-лист (версия {checklist.version}) отличается от config/checklist.default.json: "
+              + "; ".join(drift) + ".\n  Если организаторы заменили критерий - так и должно быть. Если это правки "
+              "из демо - остановите (Ctrl+C) и запустите с --reset-checklist.", flush=True)
+    else:
+        print(f"Чек-лист: версия {checklist.version}, совпадает с config/checklist.default.json", flush=True)
 
     if a.check:
         errors = validate_document(json.loads(out.read_text("utf-8")), ids_all, lengths, strict)
