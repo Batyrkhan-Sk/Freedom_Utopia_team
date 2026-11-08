@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "team_name": "Freedom Utopia",
+  "team_name": "Utopia",
   "model": {
     "mode": "external_api",
     "name": "anthropic/claude-haiku-5-5, anthropic/claude-sonnet-5-5"
