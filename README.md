@@ -8,8 +8,10 @@
 чаты и звонки операторов по чек-листу из 8 критериев, объясняет каждое решение ссылками на реплики,
 считает итоговый балл, отмечает грубые ошибки и даёт оператору оспорить оценку.
 
-**Результаты:** [`results/dev/results.json`](results/dev/results.json) (65 диалогов DEV),
-`results/prod/results.json` (контрольный набор, появится в финальный час).
+**Результаты:**
+- [`results/prod/results.json`](results/prod/results.json) - 10 контрольных чатов (набор FBroker): оценены за 175 с
+  без ошибок, стоимость $0,06, найдено 2 грубые ошибки, обе подтверждены вторым мнением;
+- [`results/dev/results.json`](results/dev/results.json) - 65 диалогов DEV.
 
 ## Главное
 
@@ -180,7 +182,7 @@ pytest                          # 114 тестов, без вызовов мод
 
 ```bash
 python -m eval.make_results --group DEV            # 65 диалогов -> results/dev/results.json
-python -m eval.make_results --group PROD           # контрольные чаты -> results/prod/results.json
+python -m eval.make_results --group PROD --api-group FBroker --workers 2 --refetch   # так получен results/prod
 python -m eval.make_results --group PROD --check   # проверить формат готового файла
 ```
 
