@@ -11,7 +11,7 @@ push файла `results/prod/results.json` в открытый репозито
 2. `.env` на этом ноутбуке:
    ```ini
    CQA_ORG_API_URL=...ссылка организаторов...
-   CQA_TEAM_NAME=Freedom Utopia
+   CQA_TEAM_NAME=Utopia
    GROQ_API_KEY=...ключ ИЗ ОТДЕЛЬНОГО аккаунта Groq, который до финала не использовали...
    CQA_MODEL=groq/openai/gpt-oss-120b
    CQA_FALLBACK_MODELS=ollama_chat/gemma4:e4b
