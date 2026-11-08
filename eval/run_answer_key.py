@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from collections import Counter, defaultdict
@@ -142,7 +143,8 @@ def main() -> None:
     RUNS.mkdir(parents=True, exist_ok=True)
     # секунды и режим опроса в имени: параллельные прогоны не пишут в один файл
     vote = f"vote{settings.RESAMPLE}" if settings.RESAMPLE else "votecl"
-    out = a.resume or RUNS / f"{datetime.now():%Y%m%d-%H%M%S}_{settings.MODEL.replace('/', '_')}_{vote}.json"
+    model = re.sub(r"[^\w.-]", "_", settings.MODEL)   # «:» в имени файла Windows уводит данные в скрытый поток
+    out = a.resume or RUNS / f"{datetime.now():%Y%m%d-%H%M%S}_{model}_{vote}.json"
     print(f"Модель: {settings.MODEL}; резерв: {settings.FALLBACK_MODELS or 'нет'}; RPM: {settings.RPM or '∞'}; "
           f"повторный опрос: {settings.RESAMPLE or 'как в чек-листе'}\nРезультаты: {out}", flush=True)
     results = run(ids, out, checklist, {k: key[k] for k in ids})

@@ -62,6 +62,8 @@ def validate(checklist: Checklist, out: LLMOutput, msgs: list[dict],
                 errors.append(f"{tag}: реплики {wrong} не от {c.evidence_roles}")
 
         r = a.checked_range
+        if r is not None and len(r) == 1:   # «[12]» - участок из одной реплики, как [12, 12]
+            r = a.checked_range = [r[0], r[0]]
         if r is not None and not (len(r) == 2 and 0 <= r[0] <= r[1] < n):
             errors.append(f"{tag}: checked_range {r} вне диапазона 0..{n - 1}")
 
