@@ -71,3 +71,13 @@ def test_retry_on_bad_evidence(checklist):
     llm = FakeLLM(json.dumps(bad), json.dumps(GOOD))
     ev = evaluate(CONV, checklist, llm=llm)
     assert ev["total"] == 92.31 and llm.calls >= 2
+
+
+def test_single_element_range_accepted(checklist):
+    # Локальные модели пишут участок из одной реплики как [12] вместо [12, 12] - это не ошибка
+    one = json.loads(json.dumps(GOOD))
+    one["answers"][0]["checked_range"] = [3]
+    llm = FakeLLM(json.dumps(one))
+    ev = evaluate(CONV, checklist, llm=llm)
+    c = next(x for x in ev["criteria"] if x["criterion_id"] == one["answers"][0]["criterion_id"])
+    assert c["checked_range"] == [3, 3]
